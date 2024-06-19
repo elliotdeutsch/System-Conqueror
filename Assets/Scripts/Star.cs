@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public class Star : MonoBehaviour
 {
@@ -23,45 +24,28 @@ public class Star : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
-
-        if (spriteRenderer == null)
-        {
-            Debug.LogError("SpriteRenderer not found!");
-        }
-        if (circleCollider == null)
-        {
-            Debug.LogError("CircleCollider2D not found!");
-        }
-        if (textMesh == null)
-        {
-            Debug.LogError("TextMeshPro component not found!");
-        }
-
         SetInitialSprite();
         AdjustColliderSize();
 
         if (owner == "Player")
         {
+            Debug.Log($"Starting unit generation for {starName} at Start");
             StartCoroutine(GenerateUnits());
         }
 
         // Configurer la taille de la police
+        textMesh.fontSize = 5; // Ajustez cette valeur selon vos besoins
+    }
+
+    void Update()
+    {
         if (textMesh != null)
         {
-            textMesh.fontSize = 5; // Ajustez cette valeur selon vos besoins
+            // Mise à jour du texte
+            textMesh.text = $"{starName}\nUnits: {units}";
+            Debug.Log($"Updated units text for {starName}: {units}");
         }
     }
-
-   void Update()
-{
-    if (textMesh != null)
-    {
-        // Ajustez la position du texte ici
-       // textMesh.transform.position = transform.position + new Vector3(0, 0, 0); // Ajustez la valeur 1.5f selon vos besoins
-        textMesh.text = $"{starName}\nUnits: {units}";
-    }
-}
-
 
     void OnMouseEnter()
     {
@@ -88,16 +72,20 @@ public class Star : MonoBehaviour
 
     public void Conquer(Star fromStar, int attackingUnits)
     {
+        Debug.Log($"Conquering {starName} with {attackingUnits} units from {fromStar.starName}");
+
         if (attackingUnits > units)
         {
-            units = attackingUnits - units; // Les unités restantes après la conquête
+            int remainingUnits = attackingUnits - units; // Les unités restantes après la conquête
+            units = remainingUnits; // Les unités excédentaires deviennent les nouvelles unités de la planète conquise
             isNeutral = false;
             owner = fromStar.owner; // L'étoile est conquise par le propriétaire de l'étoile attaquante
-            SetSpriteBasedOnOwner();
+            SetInitialSprite();
 
             if (owner == "Player")
             {
-                StartCoroutine(GenerateUnits());
+                Debug.Log($"Starting unit generation for {starName} after conquest");
+                StartCoroutine(GenerateUnits()); // Démarrer la génération d'unités
             }
 
             // Ajouter une animation d'explosion
@@ -110,16 +98,18 @@ public class Star : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator GenerateUnits()
+    public IEnumerator GenerateUnits() // Modifier la visibilité en public
     {
+        Debug.Log($"Generating units for {starName} owned by {owner}");
         while (owner == "Player")
         {
             yield return new WaitForSeconds(1f);
             units++;
+            Debug.Log($"Units for {starName}: {units}");
         }
     }
 
-    private System.Collections.IEnumerator ExplosionAnimation()
+    private IEnumerator ExplosionAnimation()
     {
         // Ajouter une animation d'explosion ici
         // Exemple simple d'un changement de couleur rapide pour simuler une explosion

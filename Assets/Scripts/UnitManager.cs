@@ -46,6 +46,9 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
+        Debug.Log($"Sending {unitsToSend} units from {fromStar.starName}");
+
+        fromStar.units -= unitsToSend; // Déduire les unités de l'étoile d'origine
         GameObject unitInstance = Instantiate(unitPrefab, fromStar.transform.position, Quaternion.identity);
         Unit unitScript = unitInstance.GetComponent<Unit>();
         if (unitScript == null)
@@ -65,14 +68,27 @@ public class UnitManager : MonoBehaviour
                 yield return null;
             }
 
-            if (currentStar.owner != "Player")
+            if (currentStar.owner == "Player")
+            {
+                // Transfert entre planètes alliées
+                currentStar.units += unitsToSend;
+                Destroy(unitInstance);
+                yield break;
+            }
+            else if (currentStar.owner != "Player")
             {
                 if (unitsToSend >= currentStar.units)
                 {
+                    int remainingUnits = unitsToSend - currentStar.units; // Unités restantes après la conquête
                     unitsToSend -= currentStar.units;
-                    currentStar.units = 0;
+                    currentStar.units = remainingUnits; // Les unités excédentaires deviennent les nouvelles unités de la planète conquise
                     currentStar.owner = fromStar.owner;
                     currentStar.SetInitialSprite();
+                    if (currentStar.owner == "Player")
+                    {
+                        Debug.Log($"Starting unit generation for {currentStar.starName} after conquest");
+                        StartCoroutine(currentStar.GenerateUnits());
+                    }
                 }
                 else
                 {
