@@ -29,7 +29,6 @@ public class Star : MonoBehaviour
 
         if (owner == "Player")
         {
-            Debug.Log($"Starting unit generation for {starName} at Start");
             StartCoroutine(GenerateUnits());
         }
 
@@ -43,7 +42,6 @@ public class Star : MonoBehaviour
         {
             // Mise à jour du texte
             textMesh.text = $"{starName}\nUnits: {units}";
-            Debug.Log($"Updated units text for {starName}: {units}");
         }
     }
 
@@ -72,8 +70,6 @@ public class Star : MonoBehaviour
 
     public void Conquer(Star fromStar, int attackingUnits)
     {
-        Debug.Log($"Conquering {starName} with {attackingUnits} units from {fromStar.starName}");
-
         if (attackingUnits > units)
         {
             int remainingUnits = attackingUnits - units; // Les unités restantes après la conquête
@@ -84,7 +80,6 @@ public class Star : MonoBehaviour
 
             if (owner == "Player")
             {
-                Debug.Log($"Starting unit generation for {starName} after conquest");
                 StartCoroutine(GenerateUnits()); // Démarrer la génération d'unités
             }
 
@@ -98,14 +93,12 @@ public class Star : MonoBehaviour
         }
     }
 
-    public IEnumerator GenerateUnits() // Modifier la visibilité en public
+    public IEnumerator GenerateUnits()
     {
-        Debug.Log($"Generating units for {starName} owned by {owner}");
         while (owner == "Player")
         {
             yield return new WaitForSeconds(1f);
             units++;
-            Debug.Log($"Units for {starName}: {units}");
         }
     }
 
