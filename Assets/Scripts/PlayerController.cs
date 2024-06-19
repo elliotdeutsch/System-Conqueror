@@ -56,20 +56,17 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.O) && hoveredStar != null && selectedStars.Count > 0)
         {
-            Debug.Log("Sending units to " + hoveredStar.starName);
             foreach (Star selectedStar in selectedStars)
             {
                 if (selectedStar.owner == "Player")
                 {
                     int unitsToSendFromStar = Mathf.Min(unitsToSend, selectedStar.units);
-                    Debug.Log($"Sending {unitsToSendFromStar} units from {selectedStar.starName} to {hoveredStar.starName}");
 
                     if (unitsToSendFromStar > 0)
                     {
                         List<Star> path = galaxyManager.FindPath(selectedStar, hoveredStar);
                         if (path.Count > 0)
                         {
-                            Debug.Log($"Path found with {path.Count} stars.");
                             StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
                         }
                         else
