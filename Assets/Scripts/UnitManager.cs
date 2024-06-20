@@ -83,13 +83,10 @@ public class UnitManager : MonoBehaviour
                 if (unitsToSend >= currentStar.units)
                 {
                     int remainingUnits = unitsToSend - currentStar.units; // Unités restantes après la conquête
-                    unitsToSend -= currentStar.units;
-                    currentStar.units = remainingUnits; // Les unités excédentaires deviennent les nouvelles unités de la planète conquise
-                    currentStar.owner = fromStar.owner;
-                    currentStar.SetInitialSprite();
-                    if (currentStar.owner == "Player")
+                    currentStar.Conquer(fromStar, remainingUnits); // Appel de la méthode Conquer
+                    if (remainingUnits > 0)
                     {
-                        StartCoroutine(currentStar.GenerateUnits());
+                        currentStar.units = remainingUnits; // Mettre à jour les unités restantes après la conquête
                     }
                 }
                 else
@@ -104,4 +101,5 @@ public class UnitManager : MonoBehaviour
 
         Destroy(unitInstance);
     }
+
 }

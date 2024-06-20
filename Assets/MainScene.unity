@@ -235,6 +235,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   uiManager: {fileID: 1377232799}
   unitPrefab: {fileID: 310872045870931059, guid: 607b33dd11ce9434797743d677d102dd, type: 3}
+  unitSpeed: 2
 --- !u!114 &519420034
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -247,7 +248,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cd3f5a2dba4e84e4992b90be9cccdf76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitPrefab: {fileID: 310872045870931059, guid: 607b33dd11ce9434797743d677d102dd, type: 3}
   playerController: {fileID: 519420033}
+  unitSpeed: 2
 --- !u!114 &519420035
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -433,7 +436,7 @@ MonoBehaviour:
   numberOfStars: 50
   mapWidth: 100
   mapHeight: 100
-  unitPrefab: {fileID: 0}
+  mainCamera: {fileID: 519420031}
 --- !u!4 &1061640117
 Transform:
   m_ObjectHideFlags: 0
@@ -443,7 +446,7 @@ Transform:
   m_GameObject: {fileID: 1061640115}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.0276}
+  m_LocalPosition: {x: 0.6, y: -0.6, z: 0.0276}
   m_LocalScale: {x: 4.5926323, y: 4.5926323, z: 4.5926323}
   m_ConstrainProportionsScale: 0
   m_Children: []

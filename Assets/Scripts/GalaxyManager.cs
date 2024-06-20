@@ -7,13 +7,23 @@ public class GalaxyManager : MonoBehaviour
     public int numberOfStars = 50;
     public float mapWidth = 100f;
     public float mapHeight = 100f;
+    public float minStarDistance = 5f; // Distance minimale entre les étoiles
+    public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
     private List<Star> stars = new List<Star>();
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
+    private StarNameGenerator starNameGenerator;
 
     void Start()
     {
+        starNameGenerator = GetComponent<StarNameGenerator>();
+        if (starNameGenerator == null)
+        {
+            Debug.LogError("StarNameGenerator component is missing!");
+            return;
+        }
+
         GenerateGalaxy();
         Star startingStar = AssignStartingStar();
         ConnectStars();
@@ -28,7 +38,14 @@ public class GalaxyManager : MonoBehaviour
             GameObject newStar = Instantiate(starPrefab, position, Quaternion.identity);
             newStar.name = "Star_" + i;
             Star starComponent = newStar.GetComponent<Star>();
-            starComponent.starName = "Star " + i;
+            if (starComponent != null)
+            {
+                starComponent.starName = starNameGenerator.GenerateStarName();
+            }
+            else
+            {
+                Debug.LogError("Star component is missing on the star prefab!");
+            }
             stars.Add(starComponent);
             starGraph[starComponent] = new List<Star>();
         }

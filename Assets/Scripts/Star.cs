@@ -16,6 +16,9 @@ public class Star : MonoBehaviour
     public Sprite playerPlanetSprite;
     public Sprite selectedPlayerPlanetSprite;
 
+    // Référence au prefab d'explosion
+    public GameObject explosionPrefab;
+
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
@@ -35,7 +38,6 @@ public class Star : MonoBehaviour
         // Configurer la taille de la police
         textMesh.fontSize = 5; // Ajustez cette valeur selon vos besoins
     }
-
     void Update()
     {
         if (textMesh != null)
@@ -70,7 +72,7 @@ public class Star : MonoBehaviour
 
     public void Conquer(Star fromStar, int attackingUnits)
     {
-        if (attackingUnits > units)
+        if (attackingUnits >= units)
         {
             int remainingUnits = attackingUnits - units; // Les unités restantes après la conquête
             units = remainingUnits; // Les unités excédentaires deviennent les nouvelles unités de la planète conquise
@@ -82,6 +84,7 @@ public class Star : MonoBehaviour
             {
                 StartCoroutine(GenerateUnits()); // Démarrer la génération d'unités
             }
+            PlayExplosion();
 
             // Ajouter une animation d'explosion
             StartCoroutine(ExplosionAnimation());
@@ -110,7 +113,7 @@ public class Star : MonoBehaviour
         {
             if (spriteRenderer != null)
             {
-                spriteRenderer.color = Color.white;
+                /* spriteRenderer.color = Color.red; */
                 yield return new WaitForSeconds(0.1f);
                 SetSpriteBasedOnOwner();
                 yield return new WaitForSeconds(0.1f);
@@ -172,4 +175,19 @@ public class Star : MonoBehaviour
             circleCollider.radius = spriteRadius;
         }
     }
+
+    public void PlayExplosion()
+    {
+        if (explosionPrefab != null)
+        {
+            GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
+            Destroy(explosion, 2.0f); // Détruire l'animation d'explosion après 2 secondes
+        }
+        else
+        {
+            Debug.LogWarning("Explosion prefab is not assigned.");
+        }
+    }
+
+
 }
