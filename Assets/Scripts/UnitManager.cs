@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class UnitManager : MonoBehaviour
 {
     public GameObject unitPrefab;
     public PlayerController playerController;
+    public GalaxyManager galaxyManager;
     public float unitSpeed = 2.0f;
+    public TextMeshPro textMesh;
 
     void Start()
     {
@@ -24,6 +27,12 @@ public class UnitManager : MonoBehaviour
         {
             Debug.LogError("PlayerController is not assigned in the inspector or could not be found!");
         }
+
+        if (galaxyManager == null)
+        {
+            galaxyManager = FindObjectOfType<GalaxyManager>();
+        }
+
     }
 
     public IEnumerator MoveUnits(Star fromStar, List<Star> path, int unitsToSend)
@@ -46,7 +55,16 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        fromStar.units -= unitsToSend; // Déduire les unités de l'étoile d'origine
+        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
+
+        if (unitsToSend <= 0)
+        {
+            Debug.LogWarning("Not enough units to send!");
+            yield break;
+        }
+
+        fromStar.units -= unitsToSend;
+
         GameObject unitInstance = Instantiate(unitPrefab, fromStar.transform.position, Quaternion.identity);
         Unit unitScript = unitInstance.GetComponent<Unit>();
         if (unitScript == null)
@@ -55,6 +73,19 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
+        // Ajoutez un GameObject enfant pour TextMeshPro
+        GameObject textObject = new GameObject("UnitText");
+        textObject.transform.SetParent(unitInstance.transform);
+        TextMeshPro textMesh = textObject.AddComponent<TextMeshPro>();
+        textMesh.alignment = TextAlignmentOptions.Center;
+        textMesh.fontSize = 5;
+        textMesh.text = unitsToSend.ToString();
+
+        RectTransform rectTransform = textObject.GetComponent<RectTransform>();
+        rectTransform.localPosition = new Vector3(0, 0.5f, 0);
+        rectTransform.sizeDelta = new Vector2(1, 1);
+
+        unitScript.textMesh = textMesh; // Associez le composant texte à l'unité
         unitScript.Initialize(fromStar, path[path.Count - 1], unitsToSend);
 
         for (int i = 1; i < path.Count; i++)
@@ -66,33 +97,27 @@ public class UnitManager : MonoBehaviour
                 yield return null;
             }
 
-            if (currentStar.owner == "Player" && currentStar != path[path.Count - 1])
+            if (currentStar.owner == fromStar.owner && currentStar != path[path.Count - 1])
             {
-                // Si la planète appartient au joueur et n'est pas la destination finale, continuer le chemin
                 continue;
             }
-            else if (currentStar.owner == "Player" && currentStar == path[path.Count - 1])
+            else if (currentStar.owner == fromStar.owner && currentStar == path[path.Count - 1])
             {
-                // Transfert entre planètes alliées
                 currentStar.units += unitsToSend;
                 Destroy(unitInstance);
                 yield break;
             }
-            else if (currentStar.owner != "Player")
+            else if (currentStar.owner != fromStar.owner)
             {
-                if (unitsToSend >= currentStar.units)
+                if (unitsToSend > currentStar.units)
                 {
-                    int remainingUnits = unitsToSend - currentStar.units; // Unités restantes après la conquête
-                    currentStar.Conquer(fromStar, remainingUnits); // Appel de la méthode Conquer
-                    if (remainingUnits > 0)
-                    {
-                        currentStar.units = remainingUnits; // Mettre à jour les unités restantes après la conquête
-                    }
+                    currentStar.Conquer(fromStar, unitsToSend);
+                    Destroy(unitInstance);
+                    yield break;
                 }
                 else
                 {
                     currentStar.units -= unitsToSend;
-                    unitsToSend = 0;
                     Destroy(unitInstance);
                     yield break;
                 }
@@ -102,4 +127,12 @@ public class UnitManager : MonoBehaviour
         Destroy(unitInstance);
     }
 
+    public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
+    {
+        List<Star> path = galaxyManager.FindPath(fromStar, toStar); // Utiliser galaxyManager ici
+        if (path.Count > 0)
+        {
+            StartCoroutine(MoveUnits(fromStar, path, unitsToSend));
+        }
+    }
 }

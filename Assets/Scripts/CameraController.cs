@@ -2,17 +2,23 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
+    // Vitesse de déplacement de la caméra
     public float panSpeed = 20f;
+    // Vitesse de zoom de la caméra
     public float zoomSpeed = 5f;
+    // Limite de zoom minimum et maximum
     public float minZoom = 5f;
     public float maxZoom = 20f;
+    // Limites de déplacement de la caméra
     public Vector2 panLimit;
 
+    // Origine du clic pour le déplacement de la caméra
     private Vector3 dragOrigin;
     private bool isDragging = false;
 
     void Update()
     {
+        // Gérer le mouvement et le zoom de la caméra
         HandleMovement();
         HandleZoom();
     }
@@ -21,12 +27,11 @@ public class CameraController : MonoBehaviour
     {
         Vector3 pos = transform.position;
 
-        // Déplacement avec les touches ZQSD
+        // Déplacement avec les touches ZQSD ou les touches fléchées
         if (Input.GetKey("z") || Input.GetKey(KeyCode.W))
         {
             pos.y += panSpeed * Time.deltaTime;
-            //print in console the position of the camera :
-}
+        }
         if (Input.GetKey("s") || Input.GetKey(KeyCode.S))
         {
             pos.y -= panSpeed * Time.deltaTime;
@@ -60,6 +65,7 @@ public class CameraController : MonoBehaviour
             dragOrigin = Input.mousePosition;
         }
 
+        // Limiter le déplacement de la caméra aux bornes définies
         pos.x = Mathf.Clamp(pos.x, -panLimit.x, panLimit.x);
         pos.y = Mathf.Clamp(pos.y, -panLimit.y, panLimit.y);
 

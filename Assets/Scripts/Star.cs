@@ -15,6 +15,9 @@ public class Star : MonoBehaviour
     public Sprite enemyPlanetSprite;
     public Sprite playerPlanetSprite;
     public Sprite selectedPlayerPlanetSprite;
+    public Sprite motherBaseAlliedSprite;
+    public Sprite motherBaseEnemySprite;
+
 
     // Référence au prefab d'explosion
     public GameObject explosionPrefab;
@@ -22,6 +25,12 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
+    public Color playerTextColor = Color.green;
+    public Color enemyTextColor = Color.red;
+    public Color neutralTextColor = Color.white;
+    private int lastGeneratedTime;
+    public enum StarType { Neutral, MotherBaseAllied, MotherBaseEnemy, ConqueredAllied, ConqueredEnemy }
+    public StarType starType;
 
     void Start()
     {
@@ -30,38 +39,53 @@ public class Star : MonoBehaviour
         SetInitialSprite();
         AdjustColliderSize();
 
-        if (owner == "Player")
+        lastGeneratedTime = GameTimer.Instance.currentTime;
+
+        switch (starType)
         {
-            StartCoroutine(GenerateUnits());
+            case StarType.MotherBaseAllied:
+            case StarType.MotherBaseEnemy:
+                StartCoroutine(GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
+                break;
+            case StarType.ConqueredAllied:
+            case StarType.ConqueredEnemy:
+                StartCoroutine(GenerateUnits(2, 5)); // 2 unités toutes les 5 secondes
+                break;
         }
 
-        // Configurer la taille de la police
-        textMesh.fontSize = 5; // Ajustez cette valeur selon vos besoins
+        textMesh.fontSize = 5;
     }
+
+
+
     void Update()
     {
-        if (textMesh != null)
+        // Mettre à jour la couleur du texte en fonction du propriétaire
+        if (owner == "Enemy")
         {
-            // Mise à jour du texte
-            textMesh.text = $"{starName}\nUnits: {units}";
+            textMesh.color = enemyTextColor;
         }
+        else if (owner == "Player")
+        {
+            textMesh.color = playerTextColor;
+        }
+        else
+        {
+            textMesh.color = neutralTextColor;
+        }
+
+        // Mise à jour du texte sans changer la position
+        textMesh.text = $"{starName}\nUnits: {units}";
     }
 
     void OnMouseEnter()
     {
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = new Color(0.5f, 0.5f, 0.5f, 1f); // Change la couleur pour rendre le sprite plus sombre
-        }
+        spriteRenderer.color = new Color(0.5f, 0.5f, 0.5f, 1f);
     }
 
     void OnMouseExit()
     {
-        SetSpriteBasedOnOwner(); // Reviens à la couleur originale
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = Color.white;
-        }
+        spriteRenderer.color = Color.white;
     }
 
     public void SetSelected(bool selected)
@@ -74,48 +98,55 @@ public class Star : MonoBehaviour
     {
         if (attackingUnits >= units)
         {
-            int remainingUnits = attackingUnits - units; // Les unités restantes après la conquête
-            units = remainingUnits; // Les unités excédentaires deviennent les nouvelles unités de la planète conquise
+            units = attackingUnits - units;
             isNeutral = false;
-            owner = fromStar.owner; // L'étoile est conquise par le propriétaire de l'étoile attaquante
-            SetInitialSprite();
+            owner = fromStar.owner;
+            SetSpriteBasedOnOwner();
 
             if (owner == "Player")
             {
-                StartCoroutine(GenerateUnits()); // Démarrer la génération d'unités
+                Debug.Log("Player conquered a star");
+                StartCoroutine(GenerateUnits(2, 5)); // 2 unités toutes les 5 secondes
+                PlayExplosion();
             }
-            PlayExplosion();
 
-            // Ajouter une animation d'explosion
             StartCoroutine(ExplosionAnimation());
         }
         else
         {
-            // Les unités attaquantes ont été détruites
             units -= attackingUnits;
         }
     }
 
-    public IEnumerator GenerateUnits()
+    public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {
-        while (owner == "Player")
+        while (true)
         {
-            yield return new WaitForSeconds(1f);
-            units++;
+            yield return new WaitForSeconds(interval);
+            if (owner != "Neutral")
+            {
+                int currentTime = GameTimer.Instance.currentTime;
+                int elapsedIntervals = (currentTime - lastGeneratedTime) / interval;
+                if (elapsedIntervals > 0)
+                {
+                    units += unitsPerInterval * elapsedIntervals;
+                    lastGeneratedTime += elapsedIntervals * interval;
+                }
+            }
         }
     }
 
+
     private IEnumerator ExplosionAnimation()
     {
-        // Ajouter une animation d'explosion ici
-        // Exemple simple d'un changement de couleur rapide pour simuler une explosion
         for (int i = 0; i < 5; i++)
         {
             if (spriteRenderer != null)
             {
-                /* spriteRenderer.color = Color.red; */
+                Debug.Log("Explosion animation");
+                spriteRenderer.color = Color.red;
                 yield return new WaitForSeconds(0.1f);
-                SetSpriteBasedOnOwner();
+                spriteRenderer.color = Color.white;
                 yield return new WaitForSeconds(0.1f);
             }
         }
@@ -125,17 +156,23 @@ public class Star : MonoBehaviour
     {
         if (spriteRenderer != null)
         {
-            if (owner == "Player")
+            switch (starType)
             {
-                spriteRenderer.sprite = playerPlanetSprite;
-            }
-            else if (owner == "Enemy")
-            {
-                spriteRenderer.sprite = enemyPlanetSprite;
-            }
-            else
-            {
-                spriteRenderer.sprite = neutralPlanetSprite;
+                case StarType.MotherBaseAllied:
+                    spriteRenderer.sprite = motherBaseAlliedSprite;
+                    break;
+                case StarType.MotherBaseEnemy:
+                    spriteRenderer.sprite = motherBaseEnemySprite;
+                    break;
+                case StarType.ConqueredAllied:
+                    spriteRenderer.sprite = playerPlanetSprite;
+                    break;
+                case StarType.ConqueredEnemy:
+                    spriteRenderer.sprite = enemyPlanetSprite;
+                    break;
+                default:
+                    spriteRenderer.sprite = neutralPlanetSprite;
+                    break;
             }
         }
     }
@@ -170,7 +207,6 @@ public class Star : MonoBehaviour
     {
         if (circleCollider != null && spriteRenderer != null)
         {
-            // Ajuster le rayon du colliseur pour correspondre à la taille du sprite
             float spriteRadius = spriteRenderer.bounds.size.x / 2;
             circleCollider.radius = spriteRadius;
         }
@@ -180,6 +216,7 @@ public class Star : MonoBehaviour
     {
         if (explosionPrefab != null)
         {
+            Debug.Log("Explosion animation 2");
             GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             Destroy(explosion, 2.0f); // Détruire l'animation d'explosion après 2 secondes
         }

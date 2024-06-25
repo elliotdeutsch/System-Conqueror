@@ -11,7 +11,8 @@ public class GalaxyManager : MonoBehaviour
     public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
-    private List<Star> stars = new List<Star>();
+    public List<Star> stars = new List<Star>();
+
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
     private StarNameGenerator starNameGenerator;
 
@@ -26,43 +27,148 @@ public class GalaxyManager : MonoBehaviour
 
         GenerateGalaxy();
         Star startingStar = AssignStartingStar();
+        AssignEnemyStartingStar();  // Ajouter l'étoile de départ pour l'ennemi
         ConnectStars();
+        EnsureFullConnectivity();
         CenterCameraOnStartingStar(startingStar);
     }
+
 
     void GenerateGalaxy()
     {
         for (int i = 0; i < numberOfStars; i++)
         {
             Vector3 position = new Vector3(Random.Range(-mapWidth / 2, mapWidth / 2), Random.Range(-mapHeight / 2, mapHeight / 2), 0);
-            GameObject newStar = Instantiate(starPrefab, position, Quaternion.identity);
-            newStar.name = "Star_" + i;
-            Star starComponent = newStar.GetComponent<Star>();
-            if (starComponent != null)
+            if (IsValidPosition(position))
             {
-                starComponent.starName = starNameGenerator.GenerateStarName();
+                GameObject newStar = Instantiate(starPrefab, position, Quaternion.identity);
+                newStar.name = "Star_" + i;
+                Star starComponent = newStar.GetComponent<Star>();
+                if (starComponent != null)
+                {
+                    starComponent.starName = starNameGenerator.GenerateStarName();
+                }
+                else
+                {
+                    Debug.LogError("Star component is missing on the star prefab!");
+                }
+                stars.Add(starComponent);
+                starGraph[starComponent] = new List<Star>();
             }
-            else
-            {
-                Debug.LogError("Star component is missing on the star prefab!");
-            }
-            stars.Add(starComponent);
-            starGraph[starComponent] = new List<Star>();
         }
     }
 
+    bool IsValidPosition(Vector3 position)
+    {
+        foreach (Star star in stars)
+        {
+            if (Vector3.Distance(position, star.transform.position) < minStarDistance)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void EnsureFullConnectivity()
+    {
+        List<List<Star>> clusters = GetClusters();
+        while (clusters.Count > 1)
+        {
+            List<Star> clusterA = clusters[0];
+            List<Star> clusterB = clusters[1];
+            float minDistance = float.MaxValue;
+            Star closestA = null;
+            Star closestB = null;
+
+            foreach (Star starA in clusterA)
+            {
+                foreach (Star starB in clusterB)
+                {
+                    float distance = Vector3.Distance(starA.transform.position, starB.transform.position);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        closestA = starA;
+                        closestB = starB;
+                    }
+                }
+            }
+
+            if (closestA != null && closestB != null)
+            {
+                CreateLine(closestA, closestB);
+                starGraph[closestA].Add(closestB);
+                starGraph[closestB].Add(closestA);
+            }
+
+            clusters = GetClusters();
+        }
+    }
+
+    List<List<Star>> GetClusters()
+    {
+        List<List<Star>> clusters = new List<List<Star>>();
+        HashSet<Star> visited = new HashSet<Star>();
+
+        foreach (Star star in stars)
+        {
+            if (!visited.Contains(star))
+            {
+                List<Star> cluster = new List<Star>();
+                Queue<Star> queue = new Queue<Star>();
+                queue.Enqueue(star);
+                visited.Add(star);
+
+                while (queue.Count > 0)
+                {
+                    Star current = queue.Dequeue();
+                    cluster.Add(current);
+
+                    foreach (Star neighbor in starGraph[current])
+                    {
+                        if (!visited.Contains(neighbor))
+                        {
+                            queue.Enqueue(neighbor);
+                            visited.Add(neighbor);
+                        }
+                    }
+                }
+
+                clusters.Add(cluster);
+            }
+        }
+
+        return clusters;
+    }
     Star AssignStartingStar()
     {
         if (stars.Count > 0)
         {
             Star startingStar = stars[0];
             startingStar.owner = "Player";
-            startingStar.units = 100; // ou tout autre nombre d'unités de départ
+            startingStar.units = 100; // Nombre d'unités de départ
             startingStar.isNeutral = false;
+            startingStar.starType = Star.StarType.MotherBaseAllied; // Assigner comme étoile mère alliée
             startingStar.SetInitialSprite();
+            StartCoroutine(startingStar.GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
             return startingStar;
         }
         return null;
+    }
+
+    void AssignEnemyStartingStar()
+    {
+        if (stars.Count > 1)
+        {
+            Star enemyStartingStar = stars[1];  // Assumons que la deuxième étoile est pour l'ennemi
+            enemyStartingStar.owner = "Enemy";
+            enemyStartingStar.units = 100;  // Nombre d'unités de départ pour l'ennemi
+            enemyStartingStar.isNeutral = false;
+            enemyStartingStar.starType = Star.StarType.MotherBaseEnemy; // Assigner comme étoile mère ennemie
+            enemyStartingStar.SetInitialSprite();
+            StartCoroutine(enemyStartingStar.GenerateUnits(15, 5));  // 15 unités toutes les 5 secondes pour l'étoile ennemie
+        }
     }
 
     void ConnectStars()
@@ -83,21 +189,38 @@ public class GalaxyManager : MonoBehaviour
     List<Star> GetClosestStars(Star star, int numClosest)
     {
         List<Star> closestStars = new List<Star>();
-        SortedList<float, Star> distances = new SortedList<float, Star>();
+        SortedDictionary<float, List<Star>> distances = new SortedDictionary<float, List<Star>>();
 
         foreach (Star otherStar in stars)
         {
             if (otherStar != star)
             {
                 float distance = Vector3.Distance(star.transform.position, otherStar.transform.position);
-                distances.Add(distance, otherStar);
+                if (!distances.ContainsKey(distance))
+                {
+                    distances[distance] = new List<Star>();
+                }
+                distances[distance].Add(otherStar);
             }
         }
 
-        for (int i = 0; i < Mathf.Min(numClosest, distances.Count); i++)
+
+        foreach (var kvp in distances)
         {
-            closestStars.Add(distances.Values[i]);
+            foreach (var s in kvp.Value)
+            {
+                closestStars.Add(s);
+                if (closestStars.Count >= numClosest)
+                {
+                    break;
+                }
+            }
+            if (closestStars.Count >= numClosest)
+            {
+                break;
+            }
         }
+
 
         return closestStars;
     }
@@ -163,4 +286,16 @@ public class GalaxyManager : MonoBehaviour
             mainCamera.transform.position = new Vector3(startingStar.transform.position.x, startingStar.transform.position.y, mainCamera.transform.position.z);
         }
     }
+
+    public List<Star> GetNeighbors(Star star)
+    {
+        if (starGraph.ContainsKey(star))
+        {
+            return starGraph[star];
+        }
+        return new List<Star>();
+    }
+
 }
+
+

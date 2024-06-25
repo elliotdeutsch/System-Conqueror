@@ -1,17 +1,35 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Unit : MonoBehaviour
 {
-    private Star origin;
-    private Star destination;
-    private int unitCount;
+    public Star fromStar;
+    public string owner;
 
-    public void Initialize(Star origin, Star destination, int unitCount)
+    public Star targetStar;
+    public int units;
+
+    public TextMeshPro textMesh;
+
+    public void Initialize(Star from, Star target, int unitCount)
     {
-        this.origin = origin;
-        this.destination = destination;
-        this.unitCount = unitCount;
+        fromStar = from;
+        targetStar = target;
+        units = unitCount;
+
+        // Assurez-vous que le texte est mis à jour
+        if (textMesh != null)
+        {
+            textMesh.text = units.ToString();
+        }
+    }
+
+    void Update()
+    {
+        // Assurez-vous que le texte suit l'unité
+        if (textMesh != null)
+        {
+            textMesh.transform.position = transform.position + new Vector3(0, 0.5f, 0);
+        }
     }
 }

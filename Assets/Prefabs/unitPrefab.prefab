@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 275998942597790579}
   - component: {fileID: -6679403408009099317}
-  - component: {fileID: 501574546458560905}
+  - component: {fileID: 3984798703269905159}
   m_Layer: 0
   m_Name: unitPrefab
   m_TagString: Untagged
@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 310872045870931059}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.8547093, y: 7.447694, z: 4.032706}
-  m_LocalScale: {x: 3, y: 3, z: 3}
+  m_LocalPosition: {x: 0, y: 0, z: 4.032706}
+  m_LocalScale: {x: 4.698, y: 4.698, z: 4.698}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &501574546458560905
+--- !u!114 &3984798703269905159
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -97,3 +97,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 379d0eedeb2ca0749bad990680b4eaee, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  fromStar: {fileID: 0}
+  targetStar: {fileID: 0}
+  units: 0
+  textMesh: {fileID: 0}
