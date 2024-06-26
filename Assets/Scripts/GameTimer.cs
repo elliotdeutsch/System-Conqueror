@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -5,6 +6,7 @@ public class GameTimer : MonoBehaviour
 {
     public static GameTimer Instance { get; private set; }
     public int currentTime { get; private set; }
+    public event Action OnFiveSecondInterval;
 
     void Awake()
     {
@@ -31,6 +33,11 @@ public class GameTimer : MonoBehaviour
         {
             yield return new WaitForSeconds(1);
             currentTime++;
+
+            if (currentTime % 5 == 0)
+            {
+                OnFiveSecondInterval?.Invoke();
+            }
         }
     }
 }

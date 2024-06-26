@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     private int unitsToSend = 10;
     public float unitSpeed = 2.0f;
     private GalaxyManager galaxyManager;
+    private LineRenderer hoverLine;
+    private List<LineRenderer> hoverLines = new List<LineRenderer>();
 
     void Start()
     {
@@ -18,8 +20,20 @@ public class PlayerController : MonoBehaviour
         {
             Debug.LogError("UIManager is not assigned in the PlayerController.");
         }
-    }
 
+        // Initialiser les lignes temporaires
+        for (int i = 0; i < 100; i++) // Par exemple, initialiser 100 lignes
+        {
+            LineRenderer line = new GameObject("HoverLine").AddComponent<LineRenderer>();
+            line.positionCount = 2;
+            line.startWidth = 0.2f;
+            line.endWidth = 0.2f;
+            line.startColor = Color.white;
+            line.endColor = Color.white;
+            line.enabled = false; // Désactiver initialement
+            hoverLines.Add(line);
+        }
+    }
     void Update()
     {
         HandleMouseClick();
@@ -90,17 +104,44 @@ public class PlayerController : MonoBehaviour
         if (hit.collider != null)
         {
             Star star = hit.collider.GetComponent<Star>();
-            if (star != null)
+            if (star != null && star != hoveredStar)
             {
-                if (hoveredStar != star)
-                {
-                    hoveredStar = star;
-                }
+                hoveredStar = star;
+                UpdateHoverLines();
             }
         }
         else
         {
             hoveredStar = null;
+            foreach (var line in hoverLines)
+            {
+                line.enabled = false; // Désactiver toutes les lignes temporaires lorsque aucune étoile n'est survolée
+            }
+        }
+    }
+
+    void UpdateHoverLines()
+    {
+        int i = 0;
+        foreach (var selectedStar in selectedStars)
+        {
+            if (hoveredStar != null && selectedStar != null)
+            {
+                hoverLines[i].SetPosition(0, selectedStar.transform.position);
+                hoverLines[i].SetPosition(1, hoveredStar.transform.position);
+                hoverLines[i].enabled = true;
+
+                // Activer l'émission pour l'effet néon
+                hoverLines[i].material.EnableKeyword("_EMISSION");
+                hoverLines[i].material.SetColor("_EmissionColor", Color.white * 2.0f); // Ajustez l'intensité ici
+
+                i++;
+            }
+        }
+        // Désactiver les lignes non utilisées
+        for (; i < hoverLines.Count; i++)
+        {
+            hoverLines[i].enabled = false;
         }
     }
 

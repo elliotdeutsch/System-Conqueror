@@ -36,17 +36,7 @@ public class Star : MonoBehaviour
 
         lastGeneratedTime = GameTimer.Instance.currentTime;
 
-        switch (starType)
-        {
-            case StarType.MotherBaseAllied:
-            case StarType.MotherBaseEnemy:
-                StartCoroutine(GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
-                break;
-            case StarType.ConqueredAllied:
-            case StarType.ConqueredEnemy:
-                StartCoroutine(GenerateUnits(2, 5)); // 2 unités toutes les 5 secondes
-                break;
-        }
+        GameTimer.Instance.OnFiveSecondInterval += HandleFiveSecondInterval;
 
         textMesh.fontSize = 5;
 
@@ -54,6 +44,44 @@ public class Star : MonoBehaviour
         hoverEffect.SetActive(false);
         selectedEffect.SetActive(false);
     }
+
+    void OnDestroy()
+    {
+        if (GameTimer.Instance != null)
+        {
+            GameTimer.Instance.OnFiveSecondInterval -= HandleFiveSecondInterval;
+        }
+    }
+
+    void HandleFiveSecondInterval()
+    {
+        if (owner != "Neutral")
+        {
+            int unitsPerInterval = 0;
+            switch (starType)
+            {
+                case StarType.MotherBaseAllied:
+                case StarType.MotherBaseEnemy:
+                    unitsPerInterval = 15;
+                    break;
+                case StarType.ConqueredAllied:
+                case StarType.ConqueredEnemy:
+                    if (GameTimer.Instance.currentTime - lastGeneratedTime >= 5)
+                    {
+                        unitsPerInterval = 2;
+                    }
+                    break;
+            }
+
+            if (unitsPerInterval > 0)
+            {
+                units += unitsPerInterval;
+                lastGeneratedTime = GameTimer.Instance.currentTime;
+            }
+        }
+    }
+
+
 
     void Update()
     {
