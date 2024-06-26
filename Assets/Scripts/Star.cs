@@ -15,6 +15,7 @@ public class Star : MonoBehaviour
     public Sprite enemyPlanetSprite;
     public Sprite playerPlanetSprite;
     public Sprite selectedPlayerPlanetSprite;
+    public Sprite selectedMotherPlanetSprite;
     public Sprite motherBaseAlliedSprite;
     public Sprite motherBaseEnemySprite;
 
@@ -101,13 +102,31 @@ public class Star : MonoBehaviour
             units = attackingUnits - units;
             isNeutral = false;
             owner = fromStar.owner;
-            SetSpriteBasedOnOwner();
 
+            // Définir le type de l'étoile conquise
             if (owner == "Player")
             {
-                Debug.Log("Player conquered a star");
-                StartCoroutine(GenerateUnits(2, 5)); // 2 unités toutes les 5 secondes
-                PlayExplosion();
+                starType = StarType.ConqueredAllied;
+            }
+            else if (owner == "Enemy")
+            {
+                starType = StarType.ConqueredEnemy;
+            }
+
+            SetSpriteBasedOnOwner();
+
+            // Appeler l'explosion avant de démarrer la génération d'unités
+            PlayExplosion();
+
+            // Démarrer la génération d'unités pour les planètes conquises
+            StartCoroutine(GenerateUnits(2, 5));
+
+            // Mettre à jour les lignes entre toutes les planètes connectées
+            GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+            if (galaxyManager != null)
+            {
+                galaxyManager.UpdateAllLines(this);
+                galaxyManager.UpdateAllLines(fromStar);
             }
 
             StartCoroutine(ExplosionAnimation());
@@ -117,6 +136,8 @@ public class Star : MonoBehaviour
             units -= attackingUnits;
         }
     }
+
+
 
     public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {
@@ -143,7 +164,6 @@ public class Star : MonoBehaviour
         {
             if (spriteRenderer != null)
             {
-                Debug.Log("Explosion animation");
                 spriteRenderer.color = Color.red;
                 yield return new WaitForSeconds(0.1f);
                 spriteRenderer.color = Color.white;
@@ -183,7 +203,14 @@ public class Star : MonoBehaviour
         {
             if (isSelected && owner == "Player")
             {
-                spriteRenderer.sprite = selectedPlayerPlanetSprite;
+                if (starType != StarType.MotherBaseAllied)
+                {
+                    spriteRenderer.sprite = selectedPlayerPlanetSprite;
+                }
+                else
+                {
+                    spriteRenderer.sprite = selectedMotherPlanetSprite;
+                }
             }
             else
             {
@@ -216,7 +243,6 @@ public class Star : MonoBehaviour
     {
         if (explosionPrefab != null)
         {
-            Debug.Log("Explosion animation 2");
             GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             Destroy(explosion, 2.0f); // Détruire l'animation d'explosion après 2 secondes
         }

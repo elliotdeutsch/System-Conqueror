@@ -55,7 +55,14 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
+        if (fromStar.owner == "Player")
+        {
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units);
+        }
+        else if (fromStar.owner == "Enemy")
+        {
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
+        }
 
         if (unitsToSend <= 0)
         {
@@ -126,6 +133,7 @@ public class UnitManager : MonoBehaviour
 
         Destroy(unitInstance);
     }
+
 
     public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
     {

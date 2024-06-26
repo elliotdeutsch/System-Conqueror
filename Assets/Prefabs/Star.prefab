@@ -314,6 +314,7 @@ MonoBehaviour:
   enemyPlanetSprite: {fileID: 21300000, guid: 87fad6fed481b554c827c9fa74220611, type: 3}
   playerPlanetSprite: {fileID: 21300000, guid: b6c9029221b7ba846bcfd4dbfbfdc5fb, type: 3}
   selectedPlayerPlanetSprite: {fileID: 21300000, guid: 539a12ae6bf49d64a8c34c91132b6d42, type: 3}
+  selectedMotherPlanetSprite: {fileID: 21300000, guid: 25e5c0f482fee934c9b08e150b678b9e, type: 3}
   motherBaseAlliedSprite: {fileID: 21300000, guid: 1d62af3ecb4b8a64eab4a674d565f38a, type: 3}
   motherBaseEnemySprite: {fileID: 21300000, guid: 5e7f25c20859470479e19b5a211bde0a, type: 3}
   explosionPrefab: {fileID: 6192724089161036641, guid: e17d9a3f04750764c8c0a7a0461e4c3b, type: 3}

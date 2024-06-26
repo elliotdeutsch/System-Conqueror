@@ -96,7 +96,6 @@ public class BasicEnemyAI : MonoBehaviour
             {
                 // Envoie des unités le long du chemin trouvé
                 StartCoroutine(unitManager.MoveUnits(enemyStar, path, minUnitsRequired));
-                enemyStar.units -= minUnitsRequired;
             }
         }
     }

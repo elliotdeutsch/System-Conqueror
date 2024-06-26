@@ -231,10 +231,65 @@ public class GalaxyManager : MonoBehaviour
         line.positionCount = 2;
         line.SetPosition(0, starA.transform.position);
         line.SetPosition(1, starB.transform.position);
-        line.startWidth = 0.1f;
-        line.endWidth = 0.1f;
-        line.material = new Material(Shader.Find("Sprites/Default")) { color = Color.white };
+
+        // Définir l'épaisseur de la ligne
+        line.startWidth = 0.2f;
+        line.endWidth = 0.2f;
+
+        // Définir la transparence de la ligne
+        Color lineColor = new Color(1f, 1f, 1f, 0.1f); // 10% d'opacité
+
+        // Vérifier les propriétaires des étoiles pour définir la couleur
+        if (starA.owner == "Player" && starB.owner == "Player")
+        {
+            lineColor = new Color(0f, 1f, 0f, 1f); // Vert avec 10% d'opacité pour le joueur
+            Debug.Log("Ally line created");
+        }
+        else if (starA.owner == "Enemy" && starB.owner == "Enemy")
+        {
+            lineColor = new Color(1f, 0f, 0f, 1f); // Rouge avec 10% d'opacité pour l'ennemi
+            Debug.Log("Enemy line created");
+        }
+
+        line.material = new Material(Shader.Find("Sprites/Default"));
+        line.material.color = lineColor;
     }
+
+
+    public void UpdateLines(Star starA, Star starB)
+    {
+        // Trouver et détruire l'ancienne ligne
+        foreach (Transform child in transform)
+        {
+            LineRenderer lineRenderer = child.GetComponent<LineRenderer>();
+            if (lineRenderer != null)
+            {
+                Vector3 startPosition = lineRenderer.GetPosition(0);
+                Vector3 endPosition = lineRenderer.GetPosition(1);
+
+                if ((startPosition == starA.transform.position && endPosition == starB.transform.position) ||
+                    (startPosition == starB.transform.position && endPosition == starA.transform.position))
+                {
+                    Destroy(child.gameObject);
+                }
+            }
+        }
+
+        // Créer une nouvelle ligne
+        CreateLine(starA, starB);
+    }
+
+
+    public void UpdateAllLines(Star star)
+    {
+        List<Star> neighbors = GetNeighbors(star);
+        foreach (Star neighbor in neighbors)
+        {
+            UpdateLines(star, neighbor);
+        }
+    }
+
+
 
     public List<Star> FindPath(Star start, Star goal)
     {
