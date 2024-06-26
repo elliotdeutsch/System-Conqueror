@@ -243,12 +243,10 @@ public class GalaxyManager : MonoBehaviour
         if (starA.owner == "Player" && starB.owner == "Player")
         {
             lineColor = new Color(0f, 1f, 0f, 1f); // Vert avec 10% d'opacité pour le joueur
-            Debug.Log("Ally line created");
         }
         else if (starA.owner == "Enemy" && starB.owner == "Enemy")
         {
             lineColor = new Color(1f, 0f, 0f, 1f); // Rouge avec 10% d'opacité pour l'ennemi
-            Debug.Log("Enemy line created");
         }
 
         line.material = new Material(Shader.Find("Sprites/Default"));

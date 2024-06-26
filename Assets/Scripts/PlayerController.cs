@@ -36,7 +36,7 @@ public class PlayerController : MonoBehaviour
             if (hit.collider != null)
             {
                 Star star = hit.collider.GetComponent<Star>();
-                if (star != null)
+                if (star != null && star.owner == "Player")
                 {
                     if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
                     {
@@ -108,6 +108,8 @@ public class PlayerController : MonoBehaviour
     {
         selectedStars.Add(star);
         star.SetSelected(true);
+        star.selectedEffect.SetActive(true); // Activer l'effet de sélection
+
         if (uiManager != null)
         {
             uiManager.UpdateSystemInfo(star);
@@ -124,11 +126,15 @@ public class PlayerController : MonoBehaviour
         {
             selectedStars.Remove(star);
             star.SetSelected(false);
+            star.selectedEffect.SetActive(false); // Enlever l'effet de sélection
+
         }
         else
         {
             selectedStars.Add(star);
             star.SetSelected(true);
+            star.selectedEffect.SetActive(true); // Activer l'effet de sélection
+
         }
     }
 
@@ -137,6 +143,7 @@ public class PlayerController : MonoBehaviour
         foreach (Star star in selectedStars)
         {
             star.SetSelected(false);
+            star.selectedEffect.SetActive(false); // Désactiver l'effet de sélection
         }
         selectedStars.Clear();
     }

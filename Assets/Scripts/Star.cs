@@ -10,18 +10,10 @@ public class Star : MonoBehaviour
     public string owner; // Propriétaire de l'étoile
     public TextMeshPro textMesh;
 
-    // Sprites pour les différents états
-    public Sprite neutralPlanetSprite;
-    public Sprite enemyPlanetSprite;
-    public Sprite playerPlanetSprite;
-    public Sprite selectedPlayerPlanetSprite;
-    public Sprite selectedMotherPlanetSprite;
-    public Sprite motherBaseAlliedSprite;
-    public Sprite motherBaseEnemySprite;
-
-
     // Référence au prefab d'explosion
     public GameObject explosionPrefab;
+    public GameObject hoverEffect;
+    public GameObject selectedEffect;
 
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
@@ -37,8 +29,10 @@ public class Star : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
-        SetInitialSprite();
-        AdjustColliderSize();
+        hoverEffect = transform.Find("HoverEffect").gameObject;
+        selectedEffect = transform.Find("SelectedEffect").gameObject;
+
+        SetColorBasedOnOwner();
 
         lastGeneratedTime = GameTimer.Instance.currentTime;
 
@@ -55,9 +49,11 @@ public class Star : MonoBehaviour
         }
 
         textMesh.fontSize = 5;
+
+        // Initialement cacher les effets de survol et de sélection
+        hoverEffect.SetActive(false);
+        selectedEffect.SetActive(false);
     }
-
-
 
     void Update()
     {
@@ -81,18 +77,17 @@ public class Star : MonoBehaviour
 
     void OnMouseEnter()
     {
-        spriteRenderer.color = new Color(0.5f, 0.5f, 0.5f, 1f);
+        hoverEffect.SetActive(true);
     }
 
     void OnMouseExit()
     {
-        spriteRenderer.color = Color.white;
+        hoverEffect.SetActive(false);
     }
-
     public void SetSelected(bool selected)
     {
         isSelected = selected;
-        SetSpriteBasedOnOwner();
+        SetColorBasedOnOwner();
     }
 
     public void Conquer(Star fromStar, int attackingUnits)
@@ -113,7 +108,7 @@ public class Star : MonoBehaviour
                 starType = StarType.ConqueredEnemy;
             }
 
-            SetSpriteBasedOnOwner();
+            SetColorBasedOnOwner();
 
             // Appeler l'explosion avant de démarrer la génération d'unités
             PlayExplosion();
@@ -137,7 +132,24 @@ public class Star : MonoBehaviour
         }
     }
 
-
+    private void SetColorBasedOnOwner()
+    {
+        if (spriteRenderer != null)
+        {
+            if (owner == "Player")
+            {
+                spriteRenderer.color = new Color(0f, 1f, 0f, 0.5f); // Vert semi-transparent
+            }
+            else if (owner == "Enemy")
+            {
+                spriteRenderer.color = new Color(1f, 0f, 0f, 0.5f); // Rouge semi-transparent
+            }
+            else
+            {
+                spriteRenderer.color = new Color(1f, 1f, 1f, 0.5f); // Blanc semi-transparent
+            }
+        }
+    }
 
     public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {
@@ -157,7 +169,6 @@ public class Star : MonoBehaviour
         }
     }
 
-
     private IEnumerator ExplosionAnimation()
     {
         for (int i = 0; i < 5; i++)
@@ -166,78 +177,27 @@ public class Star : MonoBehaviour
             {
                 spriteRenderer.color = Color.red;
                 yield return new WaitForSeconds(0.1f);
-                spriteRenderer.color = Color.white;
+                SetColorBasedOnOwner();
                 yield return new WaitForSeconds(0.1f);
             }
         }
     }
 
+    // Fonction pour définir la couleur initiale de chaque étoile
     public void SetInitialSprite()
     {
         if (spriteRenderer != null)
         {
-            switch (starType)
-            {
-                case StarType.MotherBaseAllied:
-                    spriteRenderer.sprite = motherBaseAlliedSprite;
-                    break;
-                case StarType.MotherBaseEnemy:
-                    spriteRenderer.sprite = motherBaseEnemySprite;
-                    break;
-                case StarType.ConqueredAllied:
-                    spriteRenderer.sprite = playerPlanetSprite;
-                    break;
-                case StarType.ConqueredEnemy:
-                    spriteRenderer.sprite = enemyPlanetSprite;
-                    break;
-                default:
-                    spriteRenderer.sprite = neutralPlanetSprite;
-                    break;
-            }
+            SetColorBasedOnOwner();
         }
     }
 
+    // Fonction pour définir la couleur en fonction du propriétaire
     private void SetSpriteBasedOnOwner()
     {
-        if (spriteRenderer != null)
-        {
-            if (isSelected && owner == "Player")
-            {
-                if (starType != StarType.MotherBaseAllied)
-                {
-                    spriteRenderer.sprite = selectedPlayerPlanetSprite;
-                }
-                else
-                {
-                    spriteRenderer.sprite = selectedMotherPlanetSprite;
-                }
-            }
-            else
-            {
-                if (owner == "Player")
-                {
-                    spriteRenderer.sprite = playerPlanetSprite;
-                }
-                else if (owner == "Enemy")
-                {
-                    spriteRenderer.sprite = enemyPlanetSprite;
-                }
-                else
-                {
-                    spriteRenderer.sprite = neutralPlanetSprite;
-                }
-            }
-        }
+        SetColorBasedOnOwner();
     }
 
-    private void AdjustColliderSize()
-    {
-        if (circleCollider != null && spriteRenderer != null)
-        {
-            float spriteRadius = spriteRenderer.bounds.size.x / 2;
-            circleCollider.radius = spriteRadius;
-        }
-    }
 
     public void PlayExplosion()
     {

@@ -362,8 +362,8 @@ MonoBehaviour:
   owner: 
   textMesh: {fileID: 6542194709163664905}
   explosionPrefab: {fileID: 6192724089161036641, guid: e17d9a3f04750764c8c0a7a0461e4c3b, type: 3}
-  hoverEffect: {fileID: 0}
-  selectedEffect: {fileID: 0}
+  hoverEffect: {fileID: 3041127114415818588}
+  selectedEffect: {fileID: 8435538990389007109}
   playerTextColor: {r: 0.27276057, g: 1, b: 0.26226407, a: 1}
   enemyTextColor: {r: 1, g: 0, b: 0, a: 1}
   neutralTextColor: {r: 1, g: 1, b: 1, a: 1}
