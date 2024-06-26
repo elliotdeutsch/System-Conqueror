@@ -18,9 +18,11 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
-    public Color playerTextColor = Color.green;
-    public Color enemyTextColor = Color.red;
-    public Color neutralTextColor = Color.white;
+    public Color playerColor = Color.green;
+    public Color enemyColor = Color.red;
+    public Color neutralColor = Color.white;
+
+
     private int lastGeneratedTime;
     public enum StarType { Neutral, MotherBaseAllied, MotherBaseEnemy, ConqueredAllied, ConqueredEnemy }
     public StarType starType;
@@ -88,15 +90,15 @@ public class Star : MonoBehaviour
         // Mettre à jour la couleur du texte en fonction du propriétaire
         if (owner == "Enemy")
         {
-            textMesh.color = enemyTextColor;
+            textMesh.color = enemyColor;
         }
         else if (owner == "Player")
         {
-            textMesh.color = playerTextColor;
+            textMesh.color = playerColor;
         }
         else
         {
-            textMesh.color = neutralTextColor;
+            textMesh.color = neutralColor;
         }
 
         // Mise à jour du texte sans changer la position
@@ -166,18 +168,23 @@ public class Star : MonoBehaviour
         {
             if (owner == "Player")
             {
-                spriteRenderer.color = new Color(0f, 1f, 0f, 0.5f); // Vert semi-transparent
+                spriteRenderer.color = playerColor; // Utilisez la couleur du texte du joueur pour la planète
+                textMesh.color = playerColor; // Utilisez la couleur du texte du joueur
             }
             else if (owner == "Enemy")
             {
-                spriteRenderer.color = new Color(1f, 0f, 0f, 0.5f); // Rouge semi-transparent
+                spriteRenderer.color = enemyColor; // Utilisez la couleur du texte de l'ennemi pour la planète
+                textMesh.color = enemyColor; // Utilisez la couleur du texte de l'ennemi
             }
             else
             {
-                spriteRenderer.color = new Color(1f, 1f, 1f, 0.5f); // Blanc semi-transparent
+                spriteRenderer.color = neutralColor; // Utilisez la couleur du texte neutre pour la planète
+                textMesh.color = neutralColor; // Utilisez la couleur du texte neutre
             }
         }
     }
+
+
 
     public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {
