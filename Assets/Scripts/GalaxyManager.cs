@@ -26,6 +26,9 @@ public class GalaxyManager : MonoBehaviour
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
     private StarNameGenerator starNameGenerator;
     private PathFinding pathFinding; // Nouvelle référence à PathFinding
+    private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
+    private StarConnectionHandler starConnectionHandler; // Nouvelle référence à StarConnectionHandler
+    private StartingStarAssignment startingStarAssignment; // Nouvelle référence à StartingStarAssignment
 
     void Start()
     {
@@ -37,16 +40,25 @@ public class GalaxyManager : MonoBehaviour
         }
 
         GenerateGalaxy();
-        Star startingStar = AssignStartingStar();
-        AssignEnemyStartingStar();  // Ajouter l'étoile de départ pour l'ennemi
-        ConnectStars();
-        EnsureFullConnectivity();
+
+        startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
+        startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
+
+        Star startingStar = startingStarAssignment.AssignStartingStar();
+        startingStarAssignment.AssignEnemyStartingStar();  // Ajouter l'étoile de départ pour l'ennemi
+
+        starGraphManager = GetComponent<StarGraphManager>(); // Initialiser StarGraphManager
+        starGraphManager.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
+
+        starConnectionHandler = GetComponent<StarConnectionHandler>(); // Initialiser StarConnectionHandler
+        starConnectionHandler.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
+        starConnectionHandler.ConnectStars();
+        starConnectionHandler.EnsureFullConnectivity();
         CenterCameraOnStartingStar(startingStar);
 
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
     }
-
 
     void GenerateGalaxy()
     {
@@ -84,245 +96,12 @@ public class GalaxyManager : MonoBehaviour
         return true;
     }
 
-    void EnsureFullConnectivity()
-    {
-        List<List<Star>> clusters = GetClusters();
-        while (clusters.Count > 1)
-        {
-            List<Star> clusterA = clusters[0];
-            List<Star> clusterB = clusters[1];
-            float minDistance = float.MaxValue;
-            Star closestA = null;
-            Star closestB = null;
-
-            foreach (Star starA in clusterA)
-            {
-                foreach (Star starB in clusterB)
-                {
-                    float distance = Vector3.Distance(starA.transform.position, starB.transform.position);
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        closestA = starA;
-                        closestB = starB;
-                    }
-                }
-            }
-
-            if (closestA != null && closestB != null)
-            {
-                CreateLine(closestA, closestB);
-                starGraph[closestA].Add(closestB);
-                starGraph[closestB].Add(closestA);
-            }
-
-            clusters = GetClusters();
-        }
-    }
-
-    List<List<Star>> GetClusters()
-    {
-        List<List<Star>> clusters = new List<List<Star>>();
-        HashSet<Star> visited = new HashSet<Star>();
-
-        foreach (Star star in stars)
-        {
-            if (!visited.Contains(star))
-            {
-                List<Star> cluster = new List<Star>();
-                Queue<Star> queue = new Queue<Star>();
-                queue.Enqueue(star);
-                visited.Add(star);
-
-                while (queue.Count > 0)
-                {
-                    Star current = queue.Dequeue();
-                    cluster.Add(current);
-
-                    foreach (Star neighbor in starGraph[current])
-                    {
-                        if (!visited.Contains(neighbor))
-                        {
-                            queue.Enqueue(neighbor);
-                            visited.Add(neighbor);
-                        }
-                    }
-                }
-
-                clusters.Add(cluster);
-            }
-        }
-
-        return clusters;
-    }
-    Star AssignStartingStar()
-    {
-        if (stars.Count > 0)
-        {
-            Star startingStar = stars[0];
-            startingStar.owner = "Player";
-            startingStar.units = 100; // Nombre d'unités de départ
-            startingStar.isNeutral = false;
-            startingStar.starType = Star.StarType.MotherBaseAllied; // Assigner comme étoile mère alliée
-            startingStar.SetInitialSprite();
-            StartCoroutine(startingStar.GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
-            return startingStar;
-        }
-        return null;
-    }
-
-    void AssignEnemyStartingStar()
-    {
-        if (stars.Count > 1)
-        {
-            Star enemyStartingStar = stars[1];  // Assumons que la deuxième étoile est pour l'ennemi
-            enemyStartingStar.owner = "Enemy";
-            enemyStartingStar.units = 100;  // Nombre d'unités de départ pour l'ennemi
-            enemyStartingStar.isNeutral = false;
-            enemyStartingStar.starType = Star.StarType.MotherBaseEnemy; // Assigner comme étoile mère ennemie
-            enemyStartingStar.SetInitialSprite();
-            StartCoroutine(enemyStartingStar.GenerateUnits(15, 5));  // 15 unités toutes les 5 secondes pour l'étoile ennemie
-        }
-    }
-
-    void ConnectStars()
-    {
-        foreach (Star starA in stars)
-        {
-            int numConnections = Random.Range(1, 6);
-            List<Star> closestStars = GetClosestStars(starA, numConnections);
-            foreach (Star starB in closestStars)
-            {
-                CreateLine(starA, starB);
-                starGraph[starA].Add(starB);
-                starGraph[starB].Add(starA);
-            }
-        }
-    }
-
-    List<Star> GetClosestStars(Star star, int numClosest)
-    {
-        List<Star> closestStars = new List<Star>();
-        SortedDictionary<float, List<Star>> distances = new SortedDictionary<float, List<Star>>();
-
-        foreach (Star otherStar in stars)
-        {
-            if (otherStar != star)
-            {
-                float distance = Vector3.Distance(star.transform.position, otherStar.transform.position);
-                if (!distances.ContainsKey(distance))
-                {
-                    distances[distance] = new List<Star>();
-                }
-                distances[distance].Add(otherStar);
-            }
-        }
-
-
-        foreach (var kvp in distances)
-        {
-            foreach (var s in kvp.Value)
-            {
-                closestStars.Add(s);
-                if (closestStars.Count >= numClosest)
-                {
-                    break;
-                }
-            }
-            if (closestStars.Count >= numClosest)
-            {
-                break;
-            }
-        }
-
-
-        return closestStars;
-    }
-
-    void CreateLine(Star starA, Star starB)
-    {
-        LineRenderer line = new GameObject("Line").AddComponent<LineRenderer>();
-        line.positionCount = 2;
-        line.SetPosition(0, starA.transform.position);
-        line.SetPosition(1, starB.transform.position);
-
-        // Définir l'épaisseur de la ligne
-        line.startWidth = 0.2f;
-        line.endWidth = 0.2f;
-
-        // Définir la transparence de la ligne
-        Color lineColor = new Color(1f, 1f, 1f, 0.1f); // 10% d'opacité
-
-        // Vérifier les propriétaires des étoiles pour définir la couleur
-        if (starA.owner == "Player" && starB.owner == "Player")
-        {
-            lineColor = starA.playerColor; // Couleur de l'étoile A pour le joueur
-        }
-        else if (starA.owner == "Enemy" && starB.owner == "Enemy")
-        {
-            lineColor = starA.enemyColor; // Couleur de l'étoile A pour le joueur
-        }
-
-        line.material = new Material(Shader.Find("Sprites/Default"));
-        line.material.color = lineColor;
-    }
-
-
-    public void UpdateLines(Star starA, Star starB)
-    {
-        // Trouver et détruire l'ancienne ligne
-        foreach (Transform child in transform)
-        {
-            LineRenderer lineRenderer = child.GetComponent<LineRenderer>();
-            if (lineRenderer != null)
-            {
-                Vector3 startPosition = lineRenderer.GetPosition(0);
-                Vector3 endPosition = lineRenderer.GetPosition(1);
-
-                if ((startPosition == starA.transform.position && endPosition == starB.transform.position) ||
-                    (startPosition == starB.transform.position && endPosition == starA.transform.position))
-                {
-                    Destroy(child.gameObject);
-                }
-            }
-        }
-
-        // Créer une nouvelle ligne
-        CreateLine(starA, starB);
-    }
-
-
-    public void UpdateAllLines(Star star)
-    {
-        List<Star> neighbors = GetNeighbors(star);
-        foreach (Star neighbor in neighbors)
-        {
-            UpdateLines(star, neighbor);
-        }
-    }
-
-
-
-    public List<Star> FindPath(Star start, Star goal)
-    {
-        return pathFinding.FindPath(start, goal); // Utiliser PathFinding pour trouver le chemin
-    }
-
     void CenterCameraOnStartingStar(Star startingStar)
     {
         if (startingStar != null && mainCamera != null)
         {
             mainCamera.transform.position = new Vector3(startingStar.transform.position.x, startingStar.transform.position.y, mainCamera.transform.position.z);
         }
-    }
-
-    public List<Star> GetNeighbors(Star star)
-    {
-        if (starGraph.ContainsKey(star))
-        {
-            return starGraph[star];
-        }
-        return new List<Star>();
     }
 
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+
 /* 
 Ce script gère les propriétés et les comportements des étoiles dans le jeu.
 Il permet de suivre le nombre d'unités sur chaque étoile, de gérer les effets
@@ -156,11 +157,12 @@ public class Star : MonoBehaviour
             StartCoroutine(GenerateUnits(2, 5));
 
             // Mettre à jour les lignes entre toutes les planètes connectées
-            GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
-            if (galaxyManager != null)
+            LineManager lineManager = FindObjectOfType<LineManager>();
+
+            if (lineManager != null)
             {
-                galaxyManager.UpdateAllLines(this);
-                galaxyManager.UpdateAllLines(fromStar);
+                lineManager.UpdateAllLines(this);
+                lineManager.UpdateAllLines(fromStar);
             }
 
             StartCoroutine(ExplosionAnimation());

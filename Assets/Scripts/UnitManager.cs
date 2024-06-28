@@ -145,7 +145,9 @@ public class UnitManager : MonoBehaviour
 
     public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
     {
-        List<Star> path = galaxyManager.FindPath(fromStar, toStar); // Utiliser galaxyManager ici
+        PathFinding pathFinding = FindObjectOfType<PathFinding>();
+
+        List<Star> path = pathFinding.FindPath(fromStar, toStar); // Utiliser galaxyManager ici
         if (path.Count > 0)
         {
             StartCoroutine(MoveUnits(fromStar, path, unitsToSend));

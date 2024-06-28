@@ -551,6 +551,7 @@ GameObject:
   - component: {fileID: 1061640116}
   - component: {fileID: 1061640119}
   - component: {fileID: 1061640120}
+  - component: {fileID: 1061640121}
   m_Layer: 0
   m_Name: Galaxy
   m_TagString: Untagged
@@ -571,7 +572,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   starPrefab: {fileID: 4600749906103547578, guid: ebc586374beee5d4abda699a3fcfb720, type: 3}
-  numberOfStars: 20
+  numberOfStars: 200
   mapWidth: 100
   mapHeight: 100
   minStarDistance: 5
@@ -667,6 +668,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 39e67531f513ce342bed19487fa6ffbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1061640121
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1061640115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 57e4ddb57fa71324ca54e05f28e45763, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1102856122

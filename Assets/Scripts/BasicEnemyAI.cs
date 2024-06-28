@@ -51,7 +51,9 @@ public class BasicEnemyAI : MonoBehaviour
 
     void TryAttack(Star enemyStar)
     {
-        List<Star> neighboringStars = galaxyManager.GetNeighbors(enemyStar);
+        StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+
+        List<Star> neighboringStars = starGraphManager.GetNeighbors(enemyStar);
         Star targetStar = null;
         int minUnitsRequired = int.MaxValue;
 
@@ -101,7 +103,9 @@ public class BasicEnemyAI : MonoBehaviour
         // Si une cible est trouvée, envoyer les unités
         if (targetStar != null && enemyStar.units >= minUnitsRequired + 10)
         {
-            List<Star> path = galaxyManager.FindPath(enemyStar, targetStar);
+            PathFinding pathFinding = FindObjectOfType<PathFinding>();
+
+            List<Star> path = pathFinding.FindPath(enemyStar, targetStar);
             if (path.Count > 0)
             {
                 // Envoie des unités le long du chemin trouvé

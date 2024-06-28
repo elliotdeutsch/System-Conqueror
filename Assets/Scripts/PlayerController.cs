@@ -87,7 +87,8 @@ public class PlayerController : MonoBehaviour
 
                     if (unitsToSendFromStar > 0)
                     {
-                        List<Star> path = galaxyManager.FindPath(selectedStar, hoveredStar);
+                        PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                        List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
                         if (path.Count > 0)
                         {
                             StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
