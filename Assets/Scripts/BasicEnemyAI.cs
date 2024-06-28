@@ -2,6 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+Ce script implémente une intelligence artificielle basique pour les ennemis dans 
+le jeu. L'IA vérifie périodiquement si des attaques peuvent être lancées contre 
+des étoiles neutres ou appartenant au joueur. Elle prend des décisions en fonction 
+du nombre d'unités disponibles et des unités nécessaires pour garantir une attaque réussie.
+Le script utilise des coroutines pour gérer les vérifications périodiques et les mouvements
+des unités, ce qui permet de réaliser ces opérations de manière asynchrone et non bloquante.
+Ce comportement ajoute une dimension stratégique au jeu en permettant aux ennemis de réagir
+et d'agir de manière autonome.
+*/
+
 public class BasicEnemyAI : MonoBehaviour
 {
     // Intervalle de vérification en secondes

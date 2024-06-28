@@ -1,6 +1,15 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+/* 
+Ce script contrôle les interactions du joueur avec les étoiles dans le jeu. 
+Il permet de sélectionner des étoiles, d'envoyer des unités de ces étoiles 
+sélectionnées vers une étoile cible, et de visualiser ces actions avec des effets 
+visuels. Le script utilise des raycasts pour détecter les clics de souris 
+et les étoiles survolées, et il gère l'interface utilisateur pour afficher 
+les informations pertinentes sur les étoiles sélectionnées.
+*/
+
 public class PlayerController : MonoBehaviour
 {
     public UIManager uiManager;

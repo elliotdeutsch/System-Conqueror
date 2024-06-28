@@ -1,6 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
+de jeu. Il initialise les étoiles avec des noms générés de manière procédurale et 
+les place sur une carte tout en s'assurant qu'elles ne se chevauchent pas. Le 
+script établit un graphe des connexions entre les étoiles et utilise l'algorithme A*
+pour la recherche de chemins, facilitant ainsi le déplacement des unités entre les étoiles.
+De plus, il assigne des étoiles de départ pour le joueur et les ennemis et centre la caméra
+sur l'étoile de départ du joueur.
+*/
+
 public class GalaxyManager : MonoBehaviour
 {
     public GameObject starPrefab;
@@ -242,11 +252,11 @@ public class GalaxyManager : MonoBehaviour
         // Vérifier les propriétaires des étoiles pour définir la couleur
         if (starA.owner == "Player" && starB.owner == "Player")
         {
-            lineColor = new Color(0f, 1f, 0f, 1f); // Vert avec 10% d'opacité pour le joueur
+            lineColor = starA.playerColor; // Couleur de l'étoile A pour le joueur
         }
         else if (starA.owner == "Enemy" && starB.owner == "Enemy")
         {
-            lineColor = new Color(1f, 0f, 0f, 1f); // Rouge avec 10% d'opacité pour l'ennemi
+            lineColor = starA.enemyColor; // Couleur de l'étoile A pour le joueur
         }
 
         line.material = new Material(Shader.Find("Sprites/Default"));

@@ -1,6 +1,15 @@
 using UnityEngine;
 using TMPro;
 using System.Collections;
+/* 
+Ce script gère les propriétés et les comportements des étoiles dans le jeu.
+Il permet de suivre le nombre d'unités sur chaque étoile, de gérer les effets
+visuels pour le survol et la sélection, et de générer des unités à intervalles
+réguliers si l'étoile est contrôlée par un joueur ou un ennemi. Le script prend
+également en charge les animations d'explosion et ajuste l'apparence de l'étoile
+en fonction de son propriétaire. Cette gestion détaillée des étoiles est essentielle
+pour représenter l'état et les interactions des éléments clés dans le jeu.
+*/
 
 public class Star : MonoBehaviour
 {

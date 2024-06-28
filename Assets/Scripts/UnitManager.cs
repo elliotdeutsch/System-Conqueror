@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/* 
+Ce script gère l'envoi et le déplacement des unités entre les étoiles dans le jeu.
+Il vérifie les conditions nécessaires avant de déplacer les unités, initialise 
+les unités avec les informations correctes, et utilise une coroutine pour animer
+le mouvement des unités. Le script gère également la logique de conquête des 
+étoiles ennemies ou le renforcement des étoiles alliées. Cela permet de simuler les 
+mouvements stratégiques des unités et les conflits dans le jeu.
+*/
 public class UnitManager : MonoBehaviour
 {
     public GameObject unitPrefab;

@@ -1,5 +1,14 @@
 using UnityEngine;
 
+/* 
+Ce script permet de contrôler une caméra en vue 2D dans Unity, 
+offrant la possibilité de se déplacer dans l'espace de jeu en utilisant le clavier 
+ou la souris, et de zoomer en avant ou en arrière en utilisant la molette de la souris. 
+Les limites de déplacement et de zoom sont configurables via l'inspecteur de Unity, 
+ce qui offre une grande flexibilité pour adapter ce script à différents types de jeux 
+ou de scènes. 
+*/
+
 public class CameraController : MonoBehaviour
 {
     // Vitesse de déplacement de la caméra
