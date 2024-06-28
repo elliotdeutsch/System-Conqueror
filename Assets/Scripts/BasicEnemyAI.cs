@@ -17,7 +17,6 @@ public class BasicEnemyAI : MonoBehaviour
 {
     // Intervalle de vérification en secondes
     public float checkInterval = 5f;
-    // Seuil d'attaque en pourcentage
     public float attackThreshold = 0.35f;
     public GalaxyManager galaxyManager;
     public UnitManager unitManager;
