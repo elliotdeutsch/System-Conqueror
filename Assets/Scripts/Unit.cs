@@ -30,6 +30,8 @@ public class Unit : MonoBehaviour
         {
             textMesh.text = units.ToString();
         }
+        UpdateColor();
+
     }
 
 
@@ -38,6 +40,14 @@ public class Unit : MonoBehaviour
         if (textMesh != null)
         {
             textMesh.transform.position = transform.position + new Vector3(0, 0.5f, 0);
+        }
+    }
+
+    private void UpdateColor()
+    {
+        if (fromStar != null && fromStar.Owner != null)
+        {
+            GetComponent<SpriteRenderer>().color = fromStar.Owner.Color;
         }
     }
 }

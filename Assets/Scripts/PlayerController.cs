@@ -15,7 +15,6 @@ public class PlayerController : MonoBehaviour
     public Player player; // Référence à l'objet Player du joueur
 
     public UIManager uiManager;
-    public GameObject unitPrefab;
     private List<Star> selectedStars = new List<Star>();
     private Star hoveredStar;
     private int unitsToSend = 10;

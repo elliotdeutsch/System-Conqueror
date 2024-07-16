@@ -17,7 +17,6 @@ public class UnitManager : MonoBehaviour
     public PlayerController playerController;
     public GalaxyManager galaxyManager;
     public float unitSpeed = 2.0f;
-    public TextMeshPro textMesh;
 
     void Start()
     {
@@ -40,7 +39,6 @@ public class UnitManager : MonoBehaviour
         {
             galaxyManager = FindObjectOfType<GalaxyManager>();
         }
-
     }
 
     public IEnumerator MoveUnits(Star fromStar, List<Star> path, int unitsToSend)
@@ -80,7 +78,11 @@ public class UnitManager : MonoBehaviour
             Debug.LogError("Unit script is not found on the unitPrefab!");
             yield break;
         }
-
+        SpriteRenderer unitSpriteRenderer = unitInstance.GetComponent<SpriteRenderer>();
+        if (unitSpriteRenderer != null)
+        {
+            unitSpriteRenderer.sortingOrder = 1;
+        }
         // Ajoutez un GameObject enfant pour TextMeshPro
         GameObject textObject = new GameObject("UnitText");
         textObject.transform.SetParent(unitInstance.transform);
@@ -99,6 +101,10 @@ public class UnitManager : MonoBehaviour
         for (int i = 1; i < path.Count; i++)
         {
             Star currentStar = path[i];
+            Vector3 direction = currentStar.transform.position - unitInstance.transform.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            unitInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90)); // Ajuster l'angle pour que l'unité pointe dans la direction du mouvement
+
             while (unitInstance.transform.position != currentStar.transform.position)
             {
                 unitInstance.transform.position = Vector3.MoveTowards(unitInstance.transform.position, currentStar.transform.position, unitSpeed * Time.deltaTime);
@@ -134,6 +140,7 @@ public class UnitManager : MonoBehaviour
 
         Destroy(unitInstance);
     }
+
 
     public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
     {

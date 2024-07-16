@@ -18,6 +18,9 @@ public class StartingStarAssignment : MonoBehaviour
             startingStar.Owner = player;
             startingStar.units = 100; // Nombre d'unités de départ
             startingStar.isNeutral = false;
+            startingStar.isCapital = true;
+            startingStar.starName += " (" + player.Name + "'s Capital)"; // Ajouter " (Capitale)" au nom de l'étoile
+            startingStar.starType = Star.StarType.Capital;
             startingStar.SetInitialSprite();
             StartCoroutine(startingStar.GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
             stars.Remove(startingStar); // Retirer cette étoile de la liste des étoiles disponibles
@@ -25,7 +28,6 @@ public class StartingStarAssignment : MonoBehaviour
         }
         return null;
     }
-
 
     public void AssignStartingStars(List<Player> players)
     {
@@ -42,5 +44,4 @@ public class StartingStarAssignment : MonoBehaviour
             }
         }
     }
-
 }

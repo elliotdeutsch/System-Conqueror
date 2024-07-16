@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using TMPro;
 
 /*
 Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
@@ -19,11 +20,13 @@ public class GalaxyManager : MonoBehaviour
     public float mapWidth = 100f;
     public float mapHeight = 100f;
     public float minStarDistance = 5f; // Distance minimale entre les étoiles
-    public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
     public int numberOfPlayers = 2;
     public int numberOfAI = 3;
+    public List<Player> players = new List<Player>();
+
+    public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
     private StarNameGenerator starNameGenerator;
@@ -31,9 +34,11 @@ public class GalaxyManager : MonoBehaviour
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
     private StarConnectionHandler starConnectionHandler; // Nouvelle référence à StarConnectionHandler
     private StartingStarAssignment startingStarAssignment; // Nouvelle référence à StartingStarAssignment
-    public List<Star> stars = new List<Star>();
-    private List<Player> players = new List<Player>();
     public Player controlledPlayer;
+
+    // Références pour l'UI
+    public GameObject playerListContainer; // Conteneur pour la liste des joueurs
+    public GameObject playerNamePrefab; // Prefab pour afficher le nom d'un joueur
 
     void Start()
     {
@@ -44,16 +49,18 @@ public class GalaxyManager : MonoBehaviour
             return;
         }
 
+        players = new List<Player>(); // Assurez-vous d'initialiser la liste des joueurs
+
         // Initialiser les joueurs
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            players.Add(new Player("Player" + (i + 1), GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
+            players.Add(new Player(""/* "Player" + (i + 1) */, GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
         }
 
         // Initialiser les IA
         for (int i = 0; i < numberOfAI; i++)
         {
-            players.Add(new Player("AI" + (i + 1), GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
+            players.Add(new Player(""/* "(AI)" + (i + 1) */, GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
         }
 
         // Assigner un joueur contrôlé si des joueurs sont définis
@@ -100,10 +107,13 @@ public class GalaxyManager : MonoBehaviour
                 playerController.player = controlledPlayer;
             }
         }
+
+        UpdatePlayerListUI(); // Mettre à jour l'UI de la liste des joueurs
     }
 
     void GenerateGalaxy()
     {
+        starNameGenerator = GetComponent<StarNameGenerator>(); // Ajout de cette ligne
         for (int i = 0; i < numberOfStars; i++)
         {
             Vector3 position = new Vector3(Random.Range(-mapWidth / 2, mapWidth / 2), Random.Range(-mapHeight / 2, mapHeight / 2), 0);
@@ -138,6 +148,14 @@ public class GalaxyManager : MonoBehaviour
         return true;
     }
 
+    void CenterCameraOnStartingStar(Star startingStar)
+    {
+        if (startingStar != null && mainCamera != null)
+        {
+            mainCamera.transform.position = new Vector3(startingStar.transform.position.x, startingStar.transform.position.y, mainCamera.transform.position.z);
+        }
+    }
+
     void CenterCameraOnPlayerStartingStar()
     {
         if (controlledPlayer != null && controlledPlayer.Stars.Count > 0)
@@ -147,20 +165,44 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
-    void CenterCameraOnStartingStar(Star startingStar)
-    {
-        if (startingStar != null && mainCamera != null)
-        {
-            mainCamera.transform.position = new Vector3(startingStar.transform.position.x, startingStar.transform.position.y, mainCamera.transform.position.z);
-        }
-    }
-
     Color GetDistinctColor(int index, int total)
     {
         float hue = (float)index / total;
         float saturation = 0.8f;
         float value = 0.8f;
         return Color.HSVToRGB(hue, saturation, value);
+    }
+    void UpdatePlayerListUI()
+    {
+        if (playerListContainer == null || playerNamePrefab == null)
+        {
+            Debug.LogError("Player list container or player name prefab is not assigned!");
+            return;
+        }
+
+        // Assurez-vous que le PlayerListContainer est actif
+        playerListContainer.SetActive(true);
+
+        foreach (Transform child in playerListContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        foreach (var player in players)
+        {
+            GameObject playerNameObject = Instantiate(playerNamePrefab, playerListContainer.transform);
+            TextMeshProUGUI textComponent = playerNameObject.GetComponentInChildren<TextMeshProUGUI>(); // Utiliser GetComponentInChildren
+
+            if (textComponent != null)
+            {
+                textComponent.text = player.Name + (player.IsAI ? " (IA)" : "");
+                textComponent.color = player.Color;
+            }
+            else
+            {
+                Debug.LogError("TextMeshProUGUI component is missing on the player name prefab!");
+            }
+        }
     }
 
 }
