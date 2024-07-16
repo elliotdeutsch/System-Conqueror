@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 /*
 Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
@@ -23,8 +24,6 @@ public class GalaxyManager : MonoBehaviour
 
     public int numberOfPlayers = 2;
     public int numberOfAI = 3;
-    private List<Player> players;
-    public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
     private StarNameGenerator starNameGenerator;
@@ -32,6 +31,9 @@ public class GalaxyManager : MonoBehaviour
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
     private StarConnectionHandler starConnectionHandler; // Nouvelle référence à StarConnectionHandler
     private StartingStarAssignment startingStarAssignment; // Nouvelle référence à StartingStarAssignment
+    public List<Star> stars = new List<Star>();
+    private List<Player> players = new List<Player>();
+    public Player controlledPlayer;
 
     void Start()
     {
@@ -41,8 +43,6 @@ public class GalaxyManager : MonoBehaviour
             Debug.LogError("StarNameGenerator component is missing!");
             return;
         }
-
-        players = new List<Player>();
 
         // Initialiser les joueurs
         for (int i = 0; i < numberOfPlayers; i++)
@@ -56,13 +56,19 @@ public class GalaxyManager : MonoBehaviour
             players.Add(new Player("AI" + (i + 1), GetRandomColor(), true));
         }
 
+        // Assigner un joueur contrôlé si des joueurs sont définis
+        if (numberOfPlayers > 0)
+        {
+            controlledPlayer = players.First(p => !p.IsAI);
+        }
+
         GenerateGalaxy();
 
         startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
         startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
         startingStarAssignment.AssignStartingStars(players); // Assigner les étoiles de départ
 
-        // Assurez-vous que toutes les étoiles sont ajoutées au graphe
+        // Assurez-vous que toutes les étoiles sont ajoutées au graphe avant de connecter
         foreach (var star in stars)
         {
             if (!starGraph.ContainsKey(star))
@@ -81,6 +87,16 @@ public class GalaxyManager : MonoBehaviour
 
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
+
+        // Si un joueur est contrôlé, le lier au PlayerController
+        if (controlledPlayer != null)
+        {
+            PlayerController playerController = FindObjectOfType<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.player = controlledPlayer;
+            }
+        }
     }
 
 
