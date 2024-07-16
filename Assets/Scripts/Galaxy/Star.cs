@@ -20,7 +20,7 @@ public class Star : MonoBehaviour
     public string owner;
     public Player Owner { get; set; }
 
-    public bool isCapital; // Nouvelle propriété pour marquer si l'étoile est une capitale
+    public bool isCapital;
 
     public TextMeshPro textMesh;
     public GameObject explosionPrefab;
@@ -30,12 +30,10 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
-    public Color playerColor = Color.green;
-    public Color enemyColor = Color.red;
     public Color neutralColor = Color.white;
 
     private int lastGeneratedTime;
-    public enum StarType { Neutral, Normal, Capital }
+    public enum StarType { Neutral, Normal, Capital, Conquered }
     public StarType starType;
 
     void Start()
@@ -127,16 +125,33 @@ public class Star : MonoBehaviour
         {
             units = attackingUnits - units;
             isNeutral = false;
+
+            // Retirer cette étoile de la liste des étoiles du propriétaire précédent
+            if (Owner != null)
+            {
+                Owner.Stars.Remove(this);
+            }
+
+            // Assigner le nouveau propriétaire
             Owner = fromStar.Owner;
 
+            // Ajouter cette étoile à la liste des étoiles du nouveau propriétaire
+            if (Owner != null)
+            {
+                Owner.Stars.Add(this);
+            }
+
+            // Changer le type de l'étoile si elle était une capitale
+            if (starType == StarType.Capital)
+            {
+                starType = StarType.Conquered;
+            }
+
             SetColorBasedOnOwner();
-
             PlayExplosion();
-
             StartCoroutine(GenerateUnits(2, 5));
 
             LineManager lineManager = FindObjectOfType<LineManager>();
-
             if (lineManager != null)
             {
                 lineManager.UpdateAllLines(this);
@@ -144,13 +159,19 @@ public class Star : MonoBehaviour
             }
 
             StartCoroutine(ExplosionAnimation());
+
+            // Mettre à jour l'interface utilisateur
+            GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+            if (galaxyManager != null)
+            {
+                galaxyManager.UpdatePlayerListUI();
+            }
         }
         else
         {
             units -= attackingUnits;
         }
     }
-
     public void SetColorBasedOnOwner()
     {
         if (Owner != null)

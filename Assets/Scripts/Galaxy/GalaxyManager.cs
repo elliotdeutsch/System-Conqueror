@@ -20,6 +20,7 @@ public class GalaxyManager : MonoBehaviour
     public float mapWidth = 100f;
     public float mapHeight = 100f;
     public float minStarDistance = 5f; // Distance minimale entre les étoiles
+    public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
     public int numberOfPlayers = 2;
@@ -54,13 +55,13 @@ public class GalaxyManager : MonoBehaviour
         // Initialiser les joueurs
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            players.Add(new Player(""/* "Player" + (i + 1) */, GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
+            players.Add(new Player("Player" + (i + 1), GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
         }
 
         // Initialiser les IA
         for (int i = 0; i < numberOfAI; i++)
         {
-            players.Add(new Player(""/* "(AI)" + (i + 1) */, GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
+            players.Add(new Player("AI" + (i + 1), GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
         }
 
         // Assigner un joueur contrôlé si des joueurs sont définis
@@ -172,7 +173,8 @@ public class GalaxyManager : MonoBehaviour
         float value = 0.8f;
         return Color.HSVToRGB(hue, saturation, value);
     }
-    void UpdatePlayerListUI()
+
+    public void UpdatePlayerListUI()
     {
         if (playerListContainer == null || playerNamePrefab == null)
         {
@@ -188,14 +190,19 @@ public class GalaxyManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        foreach (var player in players)
+        // Trier les joueurs par nombre de planètes possédées (du plus au moins)
+        var sortedPlayers = players.OrderByDescending(p => p.Stars.Count).ToList();
+
+        foreach (var player in sortedPlayers)
         {
             GameObject playerNameObject = Instantiate(playerNamePrefab, playerListContainer.transform);
             TextMeshProUGUI textComponent = playerNameObject.GetComponentInChildren<TextMeshProUGUI>(); // Utiliser GetComponentInChildren
 
             if (textComponent != null)
             {
-                textComponent.text = player.Name + (player.IsAI ? " (IA)" : "");
+                int totalStars = stars.Count;
+                float percentage = (float)player.Stars.Count / totalStars * 100;
+                textComponent.text = $"{player.Name} : {player.Stars.Count} ({percentage:F1}%)" + (player.IsAI ? " (IA)" : "");
                 textComponent.color = player.Color;
             }
             else
@@ -204,5 +211,6 @@ public class GalaxyManager : MonoBehaviour
             }
         }
     }
+
 
 }
