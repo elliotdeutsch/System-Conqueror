@@ -47,13 +47,13 @@ public class GalaxyManager : MonoBehaviour
         // Initialiser les joueurs
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            players.Add(new Player("Player" + (i + 1), GetRandomColor(), false));
+            players.Add(new Player("Player" + (i + 1), GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
         }
 
         // Initialiser les IA
         for (int i = 0; i < numberOfAI; i++)
         {
-            players.Add(new Player("AI" + (i + 1), GetRandomColor(), true));
+            players.Add(new Player("AI" + (i + 1), GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
         }
 
         // Assigner un joueur contrôlé si des joueurs sont définis
@@ -67,6 +67,9 @@ public class GalaxyManager : MonoBehaviour
         startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
         startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
         startingStarAssignment.AssignStartingStars(players); // Assigner les étoiles de départ
+
+        // Centrer la caméra sur la planète de départ du joueur contrôlé
+        CenterCameraOnPlayerStartingStar();
 
         // Assurez-vous que toutes les étoiles sont ajoutées au graphe avant de connecter
         foreach (var star in stars)
@@ -84,8 +87,7 @@ public class GalaxyManager : MonoBehaviour
         starConnectionHandler.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
         starConnectionHandler.ConnectStars();
         starConnectionHandler.EnsureFullConnectivity();
-        // Centrer la caméra sur la planète de départ du joueur contrôlé
-        CenterCameraOnPlayerStartingStar();
+
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
 
@@ -99,7 +101,6 @@ public class GalaxyManager : MonoBehaviour
             }
         }
     }
-
 
     void GenerateGalaxy()
     {
@@ -154,8 +155,12 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
-    Color GetRandomColor()
+    Color GetDistinctColor(int index, int total)
     {
-        return new Color(Random.value, Random.value, Random.value);
+        float hue = (float)index / total;
+        float saturation = 0.8f;
+        float value = 0.8f;
+        return Color.HSVToRGB(hue, saturation, value);
     }
+
 }

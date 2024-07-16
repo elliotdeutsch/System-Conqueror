@@ -98,13 +98,9 @@ public class Star : MonoBehaviour
     void Update()
     {
         // Mettre à jour la couleur du texte en fonction du propriétaire
-        if (owner == "Enemy")
+        if (Owner != null)
         {
-            textMesh.color = enemyColor;
-        }
-        else if (owner == "Player")
-        {
-            textMesh.color = playerColor;
+            textMesh.color = Owner.Color;
         }
         else
         {
