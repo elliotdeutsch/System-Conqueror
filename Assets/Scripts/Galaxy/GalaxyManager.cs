@@ -203,6 +203,7 @@ public class GalaxyManager : MonoBehaviour
                 int totalStars = stars.Count;
                 float percentage = (float)player.Stars.Count / totalStars * 100;
                 textComponent.text = $"{player.Name} : {player.Stars.Count} ({percentage:F1}%)" + (player.IsAI ? " (IA)" : "");
+                textComponent.text = $"{player.Name}" + (player.IsAI ? " (IA)" : "") + $" : {player.Stars.Count}, ({percentage:F1}%)";
                 textComponent.color = player.Color;
             }
             else

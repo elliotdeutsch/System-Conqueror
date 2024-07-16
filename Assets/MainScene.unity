@@ -771,10 +771,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   starPrefab: {fileID: 4600749906103547578, guid: ebc586374beee5d4abda699a3fcfb720, type: 3}
-  numberOfStars: 30
-  mapWidth: 50
-  mapHeight: 50
+  numberOfStars: 100
+  mapWidth: 70
+  mapHeight: 60
   minStarDistance: 5
+  unitPrefab: {fileID: 0}
   mainCamera: {fileID: 519420031}
   numberOfPlayers: 1
   numberOfAI: 8
