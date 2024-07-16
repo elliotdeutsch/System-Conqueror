@@ -16,7 +16,16 @@ public class StarGraphManager : MonoBehaviour
     {
         starGraph = graph;
         stars = starList;
+
+        foreach (var star in stars)
+        {
+            if (!starGraph.ContainsKey(star))
+            {
+                starGraph[star] = new List<Star>();
+            }
+        }
     }
+
 
     public List<List<Star>> GetClusters()
     {

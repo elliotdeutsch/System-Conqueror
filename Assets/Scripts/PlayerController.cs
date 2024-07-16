@@ -12,6 +12,8 @@ les informations pertinentes sur les étoiles sélectionnées.
 
 public class PlayerController : MonoBehaviour
 {
+    public Player player; // Référence à l'objet Player du joueur
+
     public UIManager uiManager;
     public GameObject unitPrefab;
     private List<Star> selectedStars = new List<Star>();
@@ -59,7 +61,7 @@ public class PlayerController : MonoBehaviour
             if (hit.collider != null)
             {
                 Star star = hit.collider.GetComponent<Star>();
-                if (star != null && star.owner == "Player")
+                if (star != null && star.Owner == player)
                 {
                     if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
                     {
@@ -81,7 +83,7 @@ public class PlayerController : MonoBehaviour
         {
             foreach (Star selectedStar in selectedStars)
             {
-                if (selectedStar.owner == "Player")
+                if (selectedStar.Owner == player)
                 {
                     int unitsToSendFromStar = Mathf.Min(unitsToSend, selectedStar.units);
 

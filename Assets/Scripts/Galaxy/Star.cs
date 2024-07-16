@@ -14,13 +14,13 @@ pour représenter l'état et les interactions des éléments clés dans le jeu.
 
 public class Star : MonoBehaviour
 {
-    public string starName = "Unnamed Star"; // Nom de l'étoile
-    public int units = 25; // Nombre d'unités
-    public bool isNeutral = true; // Si l'étoile est neutre ou contrôlée
-    public string owner; // Propriétaire de l'étoile
-    public TextMeshPro textMesh;
+    public string starName;
+    public int units;
+    public bool isNeutral;
+    public string owner;
+    public Player Owner { get; set; }
 
-    // Référence au prefab d'explosion
+    public TextMeshPro textMesh;
     public GameObject explosionPrefab;
     public GameObject hoverEffect;
     public GameObject selectedEffect;
@@ -136,27 +136,14 @@ public class Star : MonoBehaviour
         {
             units = attackingUnits - units;
             isNeutral = false;
-            owner = fromStar.owner;
-
-            // Définir le type de l'étoile conquise
-            if (owner == "Player")
-            {
-                starType = StarType.ConqueredAllied;
-            }
-            else if (owner == "Enemy")
-            {
-                starType = StarType.ConqueredEnemy;
-            }
+            Owner = fromStar.Owner; // Mettre à jour le propriétaire de l'étoile
 
             SetColorBasedOnOwner();
 
-            // Appeler l'explosion avant de démarrer la génération d'unités
             PlayExplosion();
 
-            // Démarrer la génération d'unités pour les planètes conquises
             StartCoroutine(GenerateUnits(2, 5));
 
-            // Mettre à jour les lignes entre toutes les planètes connectées
             LineManager lineManager = FindObjectOfType<LineManager>();
 
             if (lineManager != null)
@@ -173,29 +160,18 @@ public class Star : MonoBehaviour
         }
     }
 
-    private void SetColorBasedOnOwner()
+
+    public void SetColorBasedOnOwner()
     {
-        if (spriteRenderer != null)
+        if (Owner != null)
         {
-            if (owner == "Player")
-            {
-                spriteRenderer.color = playerColor; // Utilisez la couleur du texte du joueur pour la planète
-                textMesh.color = playerColor; // Utilisez la couleur du texte du joueur
-            }
-            else if (owner == "Enemy")
-            {
-                spriteRenderer.color = enemyColor; // Utilisez la couleur du texte de l'ennemi pour la planète
-                textMesh.color = enemyColor; // Utilisez la couleur du texte de l'ennemi
-            }
-            else
-            {
-                spriteRenderer.color = neutralColor; // Utilisez la couleur du texte neutre pour la planète
-                textMesh.color = neutralColor; // Utilisez la couleur du texte neutre
-            }
+            GetComponent<SpriteRenderer>().color = Owner.Color;
+        }
+        else
+        {
+            GetComponent<SpriteRenderer>().color = neutralColor;
         }
     }
-
-
 
     public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {

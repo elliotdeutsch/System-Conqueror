@@ -28,13 +28,9 @@ public class LineManager : MonoBehaviour
         Color lineColor = new Color(1f, 1f, 1f, 0.1f); // 10% d'opacité
 
         // Vérifier les propriétaires des étoiles pour définir la couleur
-        if (starA.owner == "Player" && starB.owner == "Player")
+        if (starA.Owner != null && starB.Owner != null && starA.Owner == starB.Owner)
         {
-            lineColor = starA.playerColor; // Couleur de l'étoile A pour le joueur
-        }
-        else if (starA.owner == "Enemy" && starB.owner == "Enemy")
-        {
-            lineColor = starA.enemyColor; // Couleur de l'étoile A pour le joueur
+            lineColor = starA.Owner.Color; // Utiliser la couleur du propriétaire de l'étoile A
         }
 
         line.material = new Material(Shader.Find("Sprites/Default"));

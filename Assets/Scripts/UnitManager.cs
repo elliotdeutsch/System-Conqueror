@@ -63,14 +63,7 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        if (fromStar.owner == "Player")
-        {
-            unitsToSend = Mathf.Min(unitsToSend, fromStar.units);
-        }
-        else if (fromStar.owner == "Enemy")
-        {
-            unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
-        }
+        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10); // Assurez-vous que les unités envoyées ne laissent pas la star d'origine vulnérable
 
         if (unitsToSend <= 0)
         {
@@ -112,17 +105,17 @@ public class UnitManager : MonoBehaviour
                 yield return null;
             }
 
-            if (currentStar.owner == fromStar.owner && currentStar != path[path.Count - 1])
+            if (currentStar.Owner == fromStar.Owner && currentStar != path[path.Count - 1])
             {
                 continue;
             }
-            else if (currentStar.owner == fromStar.owner && currentStar == path[path.Count - 1])
+            else if (currentStar.Owner == fromStar.Owner && currentStar == path[path.Count - 1])
             {
                 currentStar.units += unitsToSend;
                 Destroy(unitInstance);
                 yield break;
             }
-            else if (currentStar.owner != fromStar.owner)
+            else if (currentStar.Owner != fromStar.Owner)
             {
                 if (unitsToSend > currentStar.units)
                 {
@@ -141,7 +134,6 @@ public class UnitManager : MonoBehaviour
 
         Destroy(unitInstance);
     }
-
 
     public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
     {

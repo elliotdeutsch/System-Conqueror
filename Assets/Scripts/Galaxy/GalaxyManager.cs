@@ -21,6 +21,9 @@ public class GalaxyManager : MonoBehaviour
     public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
+    public int numberOfPlayers = 2;
+    public int numberOfAI = 3;
+    private List<Player> players;
     public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
@@ -39,13 +42,34 @@ public class GalaxyManager : MonoBehaviour
             return;
         }
 
+        players = new List<Player>();
+
+        // Initialiser les joueurs
+        for (int i = 0; i < numberOfPlayers; i++)
+        {
+            players.Add(new Player("Player" + (i + 1), GetRandomColor(), false));
+        }
+
+        // Initialiser les IA
+        for (int i = 0; i < numberOfAI; i++)
+        {
+            players.Add(new Player("AI" + (i + 1), GetRandomColor(), true));
+        }
+
         GenerateGalaxy();
 
         startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
         startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
+        startingStarAssignment.AssignStartingStars(players); // Assigner les étoiles de départ
 
-        Star startingStar = startingStarAssignment.AssignStartingStar();
-        startingStarAssignment.AssignEnemyStartingStar();  // Ajouter l'étoile de départ pour l'ennemi
+        // Assurez-vous que toutes les étoiles sont ajoutées au graphe
+        foreach (var star in stars)
+        {
+            if (!starGraph.ContainsKey(star))
+            {
+                starGraph[star] = new List<Star>();
+            }
+        }
 
         starGraphManager = GetComponent<StarGraphManager>(); // Initialiser StarGraphManager
         starGraphManager.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
@@ -54,11 +78,11 @@ public class GalaxyManager : MonoBehaviour
         starConnectionHandler.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
         starConnectionHandler.ConnectStars();
         starConnectionHandler.EnsureFullConnectivity();
-        CenterCameraOnStartingStar(startingStar);
 
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
     }
+
 
     void GenerateGalaxy()
     {
@@ -104,6 +128,8 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
+    Color GetRandomColor()
+    {
+        return new Color(Random.value, Random.value, Random.value);
+    }
 }
-
-

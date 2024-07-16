@@ -24,12 +24,14 @@ public class Unit : MonoBehaviour
         fromStar = from;
         targetStar = target;
         units = unitCount;
+        owner = from.Owner.Name; // Assurez-vous de définir le propriétaire correctement
 
         if (textMesh != null)
         {
             textMesh.text = units.ToString();
         }
     }
+
 
     void Update()
     {
