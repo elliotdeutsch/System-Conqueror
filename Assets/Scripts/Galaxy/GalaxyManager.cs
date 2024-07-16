@@ -84,7 +84,8 @@ public class GalaxyManager : MonoBehaviour
         starConnectionHandler.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
         starConnectionHandler.ConnectStars();
         starConnectionHandler.EnsureFullConnectivity();
-
+        // Centrer la caméra sur la planète de départ du joueur contrôlé
+        CenterCameraOnPlayerStartingStar();
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
 
@@ -134,6 +135,15 @@ public class GalaxyManager : MonoBehaviour
             }
         }
         return true;
+    }
+
+    void CenterCameraOnPlayerStartingStar()
+    {
+        if (controlledPlayer != null && controlledPlayer.Stars.Count > 0)
+        {
+            Star startingStar = controlledPlayer.Stars[0];
+            CenterCameraOnStartingStar(startingStar);
+        }
     }
 
     void CenterCameraOnStartingStar(Star startingStar)
