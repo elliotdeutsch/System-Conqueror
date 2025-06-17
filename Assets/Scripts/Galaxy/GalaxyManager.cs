@@ -43,6 +43,11 @@ public class GalaxyManager : MonoBehaviour
 
     void Start()
     {
+        // Galaxy initialization is triggered from GameSetupUI
+    }
+
+    public void InitializeGalaxy()
+    {
         starNameGenerator = GetComponent<StarNameGenerator>();
         if (starNameGenerator == null)
         {

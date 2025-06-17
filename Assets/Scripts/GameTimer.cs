@@ -30,10 +30,20 @@ public class GameTimer : MonoBehaviour
         }
     }
 
+    private bool isRunning = false;
+
     void Start()
     {
         currentTime = 0;
-        StartCoroutine(IncrementTimer());
+    }
+
+    public void StartTimer()
+    {
+        if (!isRunning)
+        {
+            isRunning = true;
+            StartCoroutine(IncrementTimer());
+        }
     }
 
     IEnumerator IncrementTimer()
