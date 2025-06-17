@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using TMPro;
 
 /*
 Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
@@ -21,6 +23,10 @@ public class GalaxyManager : MonoBehaviour
     public GameObject unitPrefab;
     public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
+    public int numberOfPlayers = 2;
+    public int numberOfAI = 3;
+    public List<Player> players = new List<Player>();
+
     public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
@@ -29,6 +35,11 @@ public class GalaxyManager : MonoBehaviour
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
     private StarConnectionHandler starConnectionHandler; // Nouvelle référence à StarConnectionHandler
     private StartingStarAssignment startingStarAssignment; // Nouvelle référence à StartingStarAssignment
+    public Player controlledPlayer;
+
+    // Références pour l'UI
+    public GameObject playerListContainer; // Conteneur pour la liste des joueurs
+    public GameObject playerNamePrefab; // Prefab pour afficher le nom d'un joueur
 
     void Start()
     {
@@ -39,13 +50,43 @@ public class GalaxyManager : MonoBehaviour
             return;
         }
 
+        players = new List<Player>(); // Assurez-vous d'initialiser la liste des joueurs
+
+        // Initialiser les joueurs
+        for (int i = 0; i < numberOfPlayers; i++)
+        {
+            players.Add(new Player("Player" + (i + 1), GetDistinctColor(i, numberOfPlayers + numberOfAI), false));
+        }
+
+        // Initialiser les IA
+        for (int i = 0; i < numberOfAI; i++)
+        {
+            players.Add(new Player("AI" + (i + 1), GetDistinctColor(numberOfPlayers + i, numberOfPlayers + numberOfAI), true));
+        }
+
+        // Assigner un joueur contrôlé si des joueurs sont définis
+        if (numberOfPlayers > 0)
+        {
+            controlledPlayer = players.First(p => !p.IsAI);
+        }
+
         GenerateGalaxy();
 
         startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
         startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
+        startingStarAssignment.AssignStartingStars(players); // Assigner les étoiles de départ
 
-        Star startingStar = startingStarAssignment.AssignStartingStar();
-        startingStarAssignment.AssignEnemyStartingStar();  // Ajouter l'étoile de départ pour l'ennemi
+        // Centrer la caméra sur la planète de départ du joueur contrôlé
+        CenterCameraOnPlayerStartingStar();
+
+        // Assurez-vous que toutes les étoiles sont ajoutées au graphe avant de connecter
+        foreach (var star in stars)
+        {
+            if (!starGraph.ContainsKey(star))
+            {
+                starGraph[star] = new List<Star>();
+            }
+        }
 
         starGraphManager = GetComponent<StarGraphManager>(); // Initialiser StarGraphManager
         starGraphManager.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
@@ -54,14 +95,26 @@ public class GalaxyManager : MonoBehaviour
         starConnectionHandler.Initialize(starGraph, stars); // Passer le graphe des étoiles et la liste des étoiles
         starConnectionHandler.ConnectStars();
         starConnectionHandler.EnsureFullConnectivity();
-        CenterCameraOnStartingStar(startingStar);
 
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
+
+        // Si un joueur est contrôlé, le lier au PlayerController
+        if (controlledPlayer != null)
+        {
+            PlayerController playerController = FindObjectOfType<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.player = controlledPlayer;
+            }
+        }
+
+        UpdatePlayerListUI(); // Mettre à jour l'UI de la liste des joueurs
     }
 
     void GenerateGalaxy()
     {
+        starNameGenerator = GetComponent<StarNameGenerator>(); // Ajout de cette ligne
         for (int i = 0; i < numberOfStars; i++)
         {
             Vector3 position = new Vector3(Random.Range(-mapWidth / 2, mapWidth / 2), Random.Range(-mapHeight / 2, mapHeight / 2), 0);
@@ -104,6 +157,61 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
+    void CenterCameraOnPlayerStartingStar()
+    {
+        if (controlledPlayer != null && controlledPlayer.Stars.Count > 0)
+        {
+            Star startingStar = controlledPlayer.Stars[0];
+            CenterCameraOnStartingStar(startingStar);
+        }
+    }
+
+    Color GetDistinctColor(int index, int total)
+    {
+        float hue = (float)index / total;
+        float saturation = 0.8f;
+        float value = 0.8f;
+        return Color.HSVToRGB(hue, saturation, value);
+    }
+
+    public void UpdatePlayerListUI()
+    {
+        if (playerListContainer == null || playerNamePrefab == null)
+        {
+            Debug.LogError("Player list container or player name prefab is not assigned!");
+            return;
+        }
+
+        // Assurez-vous que le PlayerListContainer est actif
+        playerListContainer.SetActive(true);
+
+        foreach (Transform child in playerListContainer.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Trier les joueurs par nombre de planètes possédées (du plus au moins)
+        var sortedPlayers = players.OrderByDescending(p => p.Stars.Count).ToList();
+
+        foreach (var player in sortedPlayers)
+        {
+            GameObject playerNameObject = Instantiate(playerNamePrefab, playerListContainer.transform);
+            TextMeshProUGUI textComponent = playerNameObject.GetComponentInChildren<TextMeshProUGUI>(); // Utiliser GetComponentInChildren
+
+            if (textComponent != null)
+            {
+                int totalStars = stars.Count;
+                float percentage = (float)player.Stars.Count / totalStars * 100;
+                textComponent.text = $"{player.Name} : {player.Stars.Count} ({percentage:F1}%)" + (player.IsAI ? " (IA)" : "");
+                textComponent.text = $"{player.Name}" + (player.IsAI ? " (IA)" : "") + $" : {player.Stars.Count}, ({percentage:F1}%)";
+                textComponent.color = player.Color;
+            }
+            else
+            {
+                Debug.LogError("TextMeshProUGUI component is missing on the player name prefab!");
+            }
+        }
+    }
+
+
 }
-
-

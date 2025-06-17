@@ -10,33 +10,42 @@ public class StartingStarAssignment : MonoBehaviour
         stars = starList;
     }
 
-    public Star AssignStartingStar()
+    public void AssignStartingStars(List<Player> players)
+    {
+        foreach (var player in players)
+        {
+            Star startingStar = AssignStartingStar(player);
+            if (startingStar != null)
+            {
+                player.Stars.Add(startingStar);
+                if (!stars.Contains(startingStar))
+                {
+                    stars.Add(startingStar); // Ajouter les étoiles de départ à la liste des étoiles
+                }
+            }
+        }
+    }
+
+    public Star AssignStartingStar(Player player)
     {
         if (stars.Count > 0)
         {
-            Star startingStar = stars[0];
-            startingStar.owner = "Player";
+            Star startingStar = stars[0]; // Choisir une étoile de départ non assignée
+            startingStar.Owner = player;
             startingStar.units = 100; // Nombre d'unités de départ
             startingStar.isNeutral = false;
-            startingStar.starType = Star.StarType.MotherBaseAllied; // Assigner comme étoile mère alliée
+
+            // Assigner le type d'étoile
+            startingStar.starType = Star.StarType.Capital; // Assigner comme étoile mère
+
+            // Ajouter "(Capitale)" au nom de l'étoile
+            startingStar.starName += " (Capitale)";
+
             startingStar.SetInitialSprite();
             StartCoroutine(startingStar.GenerateUnits(15, 5)); // 15 unités toutes les 5 secondes
+            stars.Remove(startingStar); // Retirer cette étoile de la liste des étoiles disponibles
             return startingStar;
         }
         return null;
-    }
-
-    public void AssignEnemyStartingStar()
-    {
-        if (stars.Count > 1)
-        {
-            Star enemyStartingStar = stars[1];  // Assumons que la deuxième étoile est pour l'ennemi
-            enemyStartingStar.owner = "Enemy";
-            enemyStartingStar.units = 100;  // Nombre d'unités de départ pour l'ennemi
-            enemyStartingStar.isNeutral = false;
-            enemyStartingStar.starType = Star.StarType.MotherBaseEnemy; // Assigner comme étoile mère ennemie
-            enemyStartingStar.SetInitialSprite();
-            StartCoroutine(enemyStartingStar.GenerateUnits(15, 5));  // 15 unités toutes les 5 secondes pour l'étoile ennemie
-        }
     }
 }

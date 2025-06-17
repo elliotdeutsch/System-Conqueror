@@ -17,7 +17,6 @@ public class UnitManager : MonoBehaviour
     public PlayerController playerController;
     public GalaxyManager galaxyManager;
     public float unitSpeed = 2.0f;
-    public TextMeshPro textMesh;
 
     void Start()
     {
@@ -40,7 +39,6 @@ public class UnitManager : MonoBehaviour
         {
             galaxyManager = FindObjectOfType<GalaxyManager>();
         }
-
     }
 
     public IEnumerator MoveUnits(Star fromStar, List<Star> path, int unitsToSend)
@@ -63,14 +61,7 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        if (fromStar.owner == "Player")
-        {
-            unitsToSend = Mathf.Min(unitsToSend, fromStar.units);
-        }
-        else if (fromStar.owner == "Enemy")
-        {
-            unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
-        }
+        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10); // Assurez-vous que les unités envoyées ne laissent pas la star d'origine vulnérable
 
         if (unitsToSend <= 0)
         {
@@ -87,7 +78,11 @@ public class UnitManager : MonoBehaviour
             Debug.LogError("Unit script is not found on the unitPrefab!");
             yield break;
         }
-
+        SpriteRenderer unitSpriteRenderer = unitInstance.GetComponent<SpriteRenderer>();
+        if (unitSpriteRenderer != null)
+        {
+            unitSpriteRenderer.sortingOrder = 1;
+        }
         // Ajoutez un GameObject enfant pour TextMeshPro
         GameObject textObject = new GameObject("UnitText");
         textObject.transform.SetParent(unitInstance.transform);
@@ -106,23 +101,27 @@ public class UnitManager : MonoBehaviour
         for (int i = 1; i < path.Count; i++)
         {
             Star currentStar = path[i];
+            Vector3 direction = currentStar.transform.position - unitInstance.transform.position;
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            unitInstance.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle - 90)); // Ajuster l'angle pour que l'unité pointe dans la direction du mouvement
+
             while (unitInstance.transform.position != currentStar.transform.position)
             {
                 unitInstance.transform.position = Vector3.MoveTowards(unitInstance.transform.position, currentStar.transform.position, unitSpeed * Time.deltaTime);
                 yield return null;
             }
 
-            if (currentStar.owner == fromStar.owner && currentStar != path[path.Count - 1])
+            if (currentStar.Owner == fromStar.Owner && currentStar != path[path.Count - 1])
             {
                 continue;
             }
-            else if (currentStar.owner == fromStar.owner && currentStar == path[path.Count - 1])
+            else if (currentStar.Owner == fromStar.Owner && currentStar == path[path.Count - 1])
             {
                 currentStar.units += unitsToSend;
                 Destroy(unitInstance);
                 yield break;
             }
-            else if (currentStar.owner != fromStar.owner)
+            else if (currentStar.Owner != fromStar.Owner)
             {
                 if (unitsToSend > currentStar.units)
                 {

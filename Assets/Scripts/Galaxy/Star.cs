@@ -14,13 +14,15 @@ pour représenter l'état et les interactions des éléments clés dans le jeu.
 
 public class Star : MonoBehaviour
 {
-    public string starName = "Unnamed Star"; // Nom de l'étoile
-    public int units = 25; // Nombre d'unités
-    public bool isNeutral = true; // Si l'étoile est neutre ou contrôlée
-    public string owner; // Propriétaire de l'étoile
-    public TextMeshPro textMesh;
+    public string starName;
+    public int units;
+    public bool isNeutral;
+    public string owner;
+    public Player Owner { get; set; }
 
-    // Référence au prefab d'explosion
+    public bool isCapital;
+
+    public TextMeshPro textMesh;
     public GameObject explosionPrefab;
     public GameObject hoverEffect;
     public GameObject selectedEffect;
@@ -28,13 +30,10 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
-    public Color playerColor = Color.green;
-    public Color enemyColor = Color.red;
     public Color neutralColor = Color.white;
 
-
     private int lastGeneratedTime;
-    public enum StarType { Neutral, MotherBaseAllied, MotherBaseEnemy, ConqueredAllied, ConqueredEnemy }
+    public enum StarType { Neutral, Normal, Capital, Conquered }
     public StarType starType;
 
     void Start()
@@ -72,16 +71,11 @@ public class Star : MonoBehaviour
             int unitsPerInterval = 0;
             switch (starType)
             {
-                case StarType.MotherBaseAllied:
-                case StarType.MotherBaseEnemy:
+                case StarType.Capital:
                     unitsPerInterval = 15;
                     break;
-                case StarType.ConqueredAllied:
-                case StarType.ConqueredEnemy:
-                    if (GameTimer.Instance.currentTime - lastGeneratedTime >= 5)
-                    {
-                        unitsPerInterval = 2;
-                    }
+                case StarType.Normal:
+                    unitsPerInterval = 2;
                     break;
             }
 
@@ -93,18 +87,12 @@ public class Star : MonoBehaviour
         }
     }
 
-
-
     void Update()
     {
         // Mettre à jour la couleur du texte en fonction du propriétaire
-        if (owner == "Enemy")
+        if (Owner != null)
         {
-            textMesh.color = enemyColor;
-        }
-        else if (owner == "Player")
-        {
-            textMesh.color = playerColor;
+            textMesh.color = Owner.Color;
         }
         else
         {
@@ -124,6 +112,7 @@ public class Star : MonoBehaviour
     {
         hoverEffect.SetActive(false);
     }
+
     public void SetSelected(bool selected)
     {
         isSelected = selected;
@@ -136,29 +125,33 @@ public class Star : MonoBehaviour
         {
             units = attackingUnits - units;
             isNeutral = false;
-            owner = fromStar.owner;
 
-            // Définir le type de l'étoile conquise
-            if (owner == "Player")
+            // Retirer cette étoile de la liste des étoiles du propriétaire précédent
+            if (Owner != null)
             {
-                starType = StarType.ConqueredAllied;
+                Owner.Stars.Remove(this);
             }
-            else if (owner == "Enemy")
+
+            // Assigner le nouveau propriétaire
+            Owner = fromStar.Owner;
+
+            // Ajouter cette étoile à la liste des étoiles du nouveau propriétaire
+            if (Owner != null)
             {
-                starType = StarType.ConqueredEnemy;
+                Owner.Stars.Add(this);
+            }
+
+            // Changer le type de l'étoile si elle était une capitale
+            if (starType == StarType.Capital)
+            {
+                starType = StarType.Conquered;
             }
 
             SetColorBasedOnOwner();
-
-            // Appeler l'explosion avant de démarrer la génération d'unités
             PlayExplosion();
-
-            // Démarrer la génération d'unités pour les planètes conquises
             StartCoroutine(GenerateUnits(2, 5));
 
-            // Mettre à jour les lignes entre toutes les planètes connectées
             LineManager lineManager = FindObjectOfType<LineManager>();
-
             if (lineManager != null)
             {
                 lineManager.UpdateAllLines(this);
@@ -166,36 +159,30 @@ public class Star : MonoBehaviour
             }
 
             StartCoroutine(ExplosionAnimation());
+
+            // Mettre à jour l'interface utilisateur
+            GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+            if (galaxyManager != null)
+            {
+                galaxyManager.UpdatePlayerListUI();
+            }
         }
         else
         {
             units -= attackingUnits;
         }
     }
-
-    private void SetColorBasedOnOwner()
+    public void SetColorBasedOnOwner()
     {
-        if (spriteRenderer != null)
+        if (Owner != null)
         {
-            if (owner == "Player")
-            {
-                spriteRenderer.color = playerColor; // Utilisez la couleur du texte du joueur pour la planète
-                textMesh.color = playerColor; // Utilisez la couleur du texte du joueur
-            }
-            else if (owner == "Enemy")
-            {
-                spriteRenderer.color = enemyColor; // Utilisez la couleur du texte de l'ennemi pour la planète
-                textMesh.color = enemyColor; // Utilisez la couleur du texte de l'ennemi
-            }
-            else
-            {
-                spriteRenderer.color = neutralColor; // Utilisez la couleur du texte neutre pour la planète
-                textMesh.color = neutralColor; // Utilisez la couleur du texte neutre
-            }
+            GetComponent<SpriteRenderer>().color = Owner.Color;
+        }
+        else
+        {
+            GetComponent<SpriteRenderer>().color = neutralColor;
         }
     }
-
-
 
     public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
     {
@@ -244,7 +231,6 @@ public class Star : MonoBehaviour
         SetColorBasedOnOwner();
     }
 
-
     public void PlayExplosion()
     {
         if (explosionPrefab != null)
@@ -257,6 +243,4 @@ public class Star : MonoBehaviour
             Debug.LogWarning("Explosion prefab is not assigned.");
         }
     }
-
-
 }

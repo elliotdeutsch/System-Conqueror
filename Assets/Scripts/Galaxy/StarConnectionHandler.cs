@@ -30,11 +30,19 @@ public class StarConnectionHandler : MonoBehaviour
             {
                 LineManager lineManager = FindObjectOfType<LineManager>();
                 lineManager.CreateLine(starA, starB);
-                starGraph[starA].Add(starB);
-                starGraph[starB].Add(starA);
+
+                if (!starGraph[starA].Contains(starB)) // Éviter les doublons
+                {
+                    starGraph[starA].Add(starB);
+                }
+                if (!starGraph[starB].Contains(starA)) // Éviter les doublons
+                {
+                    starGraph[starB].Add(starA);
+                }
             }
         }
     }
+
 
     public void EnsureFullConnectivity()
     {

@@ -24,18 +24,30 @@ public class Unit : MonoBehaviour
         fromStar = from;
         targetStar = target;
         units = unitCount;
+        owner = from.Owner.Name; // Assurez-vous de définir le propriétaire correctement
 
         if (textMesh != null)
         {
             textMesh.text = units.ToString();
         }
+        UpdateColor();
+
     }
+
 
     void Update()
     {
         if (textMesh != null)
         {
             textMesh.transform.position = transform.position + new Vector3(0, 0.5f, 0);
+        }
+    }
+
+    private void UpdateColor()
+    {
+        if (fromStar != null && fromStar.Owner != null)
+        {
+            GetComponent<SpriteRenderer>().color = fromStar.Owner.Color;
         }
     }
 }

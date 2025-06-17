@@ -20,12 +20,16 @@ public class BasicEnemyAI : MonoBehaviour
     public float attackThreshold = 0.35f;
     public GalaxyManager galaxyManager;
     public UnitManager unitManager;
+    private StarGraphManager starGraphManager;
+    private PathFinding pathFinding;
 
     void Start()
     {
         // Initialisation des références aux gestionnaires de galaxie et d'unités
         galaxyManager = FindObjectOfType<GalaxyManager>();
         unitManager = FindObjectOfType<UnitManager>();
+        starGraphManager = FindObjectOfType<StarGraphManager>();
+        pathFinding = FindObjectOfType<PathFinding>();
         // Démarrage de la coroutine de vérification des attaques
         StartCoroutine(CheckForAttacks());
     }
@@ -40,9 +44,9 @@ public class BasicEnemyAI : MonoBehaviour
             // Parcours des étoiles pour les planètes ennemies
             foreach (Star star in galaxyManager.stars)
             {
-                if (star.owner == "Enemy")
+                if (star.Owner != null && star.Owner.IsAI)
                 {
-                    // Tentative d'attaque si la planète appartient à l'ennemi
+                    // Tentative d'attaque si la planète appartient à l'IA
                     TryAttack(star);
                 }
             }
@@ -51,8 +55,6 @@ public class BasicEnemyAI : MonoBehaviour
 
     void TryAttack(Star enemyStar)
     {
-        StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
-
         List<Star> neighboringStars = starGraphManager.GetNeighbors(enemyStar);
         Star targetStar = null;
         int minUnitsRequired = int.MaxValue;
@@ -60,7 +62,7 @@ public class BasicEnemyAI : MonoBehaviour
         // Priorité 1 : Planètes neutres
         foreach (Star neighbor in neighboringStars)
         {
-            if (neighbor.owner == "Neutral")
+            if (neighbor.Owner == null) // Étoile neutre
             {
                 int requiredUnits = Mathf.CeilToInt(neighbor.units * 1.2f) + 10; // 20% + 10 unités de plus que les unités de la planète neutre
                 int availableUnits = enemyStar.units;
@@ -77,12 +79,12 @@ public class BasicEnemyAI : MonoBehaviour
             }
         }
 
-        // Priorité 2 : Planètes du joueur
+        // Priorité 2 : Planètes du joueur ou d'autres IA
         if (targetStar == null)
         {
             foreach (Star neighbor in neighboringStars)
             {
-                if (neighbor.owner != "Enemy" && neighbor.owner != "Neutral")
+                if (neighbor.Owner != null && neighbor.Owner != enemyStar.Owner)
                 {
                     int unitsToSend = Mathf.CeilToInt(neighbor.units * (1 + attackThreshold));
                     int availableUnits = enemyStar.units - 10;
@@ -103,8 +105,6 @@ public class BasicEnemyAI : MonoBehaviour
         // Si une cible est trouvée, envoyer les unités
         if (targetStar != null && enemyStar.units >= minUnitsRequired + 10)
         {
-            PathFinding pathFinding = FindObjectOfType<PathFinding>();
-
             List<Star> path = pathFinding.FindPath(enemyStar, targetStar);
             if (path.Count > 0)
             {
@@ -113,4 +113,5 @@ public class BasicEnemyAI : MonoBehaviour
             }
         }
     }
+
 }
