@@ -99,6 +99,7 @@
     <Compile Include="Assets\Scripts\Unit.cs" />
     <Compile Include="Assets\Imports\Free 2D Impact FX\Demo Scene\DemoManager.cs" />
     <Compile Include="Assets\Scripts\UI\UnitSendSettingsUI.cs" />
+    <Compile Include="Assets\Scripts\UI\GameSetupUI.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs" />
     <Compile Include="Assets\Scripts\AI\BasicEnemyAI.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs" />
