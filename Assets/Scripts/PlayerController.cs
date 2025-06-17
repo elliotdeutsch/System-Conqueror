@@ -17,7 +17,22 @@ public class PlayerController : MonoBehaviour
     public UIManager uiManager;
     private List<Star> selectedStars = new List<Star>();
     private Star hoveredStar;
-    private int unitsToSend = 10;
+    // Valeurs par défaut pour l'envoi rapide avec les touches A et E
+    [SerializeField] private int unitsForKeyA = 10;
+    [SerializeField] private int unitsForKeyE = 100;
+
+    public int UnitsForKeyA => unitsForKeyA;
+    public int UnitsForKeyE => unitsForKeyE;
+
+    public void SetUnitsForKeyA(int value)
+    {
+        unitsForKeyA = Mathf.Max(0, value);
+    }
+
+    public void SetUnitsForKeyE(int value)
+    {
+        unitsForKeyE = Mathf.Max(0, value);
+    }
     public float unitSpeed = 2.0f;
     private GalaxyManager galaxyManager;
     private LineRenderer hoverLine;
@@ -78,32 +93,49 @@ public class PlayerController : MonoBehaviour
 
     void HandleUnitSend()
     {
-        if (Input.GetKeyDown(KeyCode.O) && hoveredStar != null && selectedStars.Count > 0)
+        if (hoveredStar == null || selectedStars.Count == 0)
         {
-            foreach (Star selectedStar in selectedStars)
-            {
-                if (selectedStar.Owner == player)
-                {
-                    int unitsToSendFromStar = Mathf.Min(unitsToSend, selectedStar.units);
+            return;
+        }
 
-                    if (unitsToSendFromStar > 0)
-                    {
-                        PathFinding pathFinding = FindObjectOfType<PathFinding>();
-                        List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
-                        if (path.Count > 0)
-                        {
-                            StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
-                        }
-                        else
-                        {
-                            Debug.LogWarning("No path found!");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("No units to send!");
-                    }
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            SendUnitsToHovered(unitsForKeyA);
+        }
+
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            SendUnitsToHovered(unitsForKeyE);
+        }
+    }
+
+    void SendUnitsToHovered(int amount)
+    {
+        foreach (Star selectedStar in selectedStars)
+        {
+            if (selectedStar.Owner != player)
+            {
+                continue;
+            }
+
+            int unitsToSendFromStar = Mathf.Min(amount, selectedStar.units);
+
+            if (unitsToSendFromStar > 0)
+            {
+                PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
+                if (path.Count > 0)
+                {
+                    StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
                 }
+                else
+                {
+                    Debug.LogWarning("No path found!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No units to send!");
             }
         }
     }
