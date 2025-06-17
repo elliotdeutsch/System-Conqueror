@@ -43,10 +43,7 @@ public class GalaxyManager : MonoBehaviour
 
     void Start()
     {
-        if (GetComponent<GameSetupUI>() == null)
-        {
-            gameObject.AddComponent<GameSetupUI>();
-        }
+        // Galaxy initialization is triggered from GameSetupUI
     }
 
     public void InitializeGalaxy()
