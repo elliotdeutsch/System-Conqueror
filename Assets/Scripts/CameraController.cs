@@ -37,19 +37,19 @@ public class CameraController : MonoBehaviour
         Vector3 pos = transform.position;
 
         // Déplacement avec les touches ZQSD ou les touches fléchées
-        if (Input.GetKey("z") || Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.W))
         {
             pos.y += panSpeed * Time.deltaTime;
         }
-        if (Input.GetKey("s") || Input.GetKey(KeyCode.S))
+        if (Input.GetKey(KeyCode.S))
         {
             pos.y -= panSpeed * Time.deltaTime;
         }
-        if (Input.GetKey("q") || Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A))
         {
             pos.x -= panSpeed * Time.deltaTime;
         }
-        if (Input.GetKey("d") || Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.D))
         {
             pos.x += panSpeed * Time.deltaTime;
         }
