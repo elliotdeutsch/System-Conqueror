@@ -67,5 +67,10 @@ public class GameSetupUI : MonoBehaviour
         }
 
         galaxyManager.InitializeGalaxy();
+
+        if (GameTimer.Instance != null)
+        {
+            GameTimer.Instance.StartTimer();
+        }
     }
 }
