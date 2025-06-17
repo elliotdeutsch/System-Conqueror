@@ -22,7 +22,12 @@ public class LineVisibility : MonoBehaviour
         {
             visibleColor = starA.Owner.Color;
         }
+        visibleColor.a = 0.1f;
         Color hiddenColor = new Color(0.5f, 0.5f, 0.5f, 0.1f);
-        lineRenderer.material.color = bothVisible ? visibleColor : hiddenColor;
+
+        Color target = bothVisible ? visibleColor : hiddenColor;
+        lineRenderer.startColor = target;
+        lineRenderer.endColor = target;
+        lineRenderer.material.color = target;
     }
 }

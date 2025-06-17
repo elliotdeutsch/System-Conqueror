@@ -136,10 +136,21 @@ public class Star : MonoBehaviour
         if (isVisible)
         {
             SetColorBasedOnOwner();
+            if (textMesh != null)
+            {
+                textMesh.gameObject.SetActive(true);
+            }
         }
         else
         {
             GetComponent<SpriteRenderer>().color = Color.gray;
+            if (textMesh != null)
+            {
+                textMesh.gameObject.SetActive(false);
+            }
+            // hide effects when star is not visible
+            if (hoverEffect != null) hoverEffect.SetActive(false);
+            if (selectedEffect != null) selectedEffect.SetActive(false);
         }
         UpdateText();
     }
