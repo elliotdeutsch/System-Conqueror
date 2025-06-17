@@ -30,6 +30,9 @@ public class GalaxyManager : MonoBehaviour
     public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
+
+    // When false, player only sees owned stars and their immediate neighbours
+    public bool showFarStars = true;
     private StarNameGenerator starNameGenerator;
     private PathFinding pathFinding; // Nouvelle référence à PathFinding
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
@@ -115,6 +118,7 @@ public class GalaxyManager : MonoBehaviour
         }
 
         UpdatePlayerListUI(); // Mettre à jour l'UI de la liste des joueurs
+        UpdateFogOfWar();
     }
 
     void GenerateGalaxy()
@@ -218,5 +222,38 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
+    // Met à jour la visibilité des étoiles et des lignes selon l'option choisie
+    public void UpdateFogOfWar()
+    {
+        HashSet<Star> visibleStars = new HashSet<Star>();
+
+        if (showFarStars || controlledPlayer == null)
+        {
+            visibleStars.UnionWith(stars);
+        }
+        else
+        {
+            foreach (Star owned in controlledPlayer.Stars)
+            {
+                visibleStars.Add(owned);
+                if (starGraph.TryGetValue(owned, out List<Star> neigh))
+                {
+                    foreach (Star n in neigh)
+                        visibleStars.Add(n);
+                }
+            }
+        }
+
+        foreach (Star s in stars)
+        {
+            s.SetVisibility(visibleStars.Contains(s));
+        }
+
+        LineManager lineManager = FindObjectOfType<LineManager>();
+        if (lineManager != null)
+        {
+            lineManager.UpdateLinesVisibility(visibleStars);
+        }
+    }
 
 }

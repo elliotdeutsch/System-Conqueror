@@ -15,7 +15,9 @@ public class LineManager : MonoBehaviour
 
     public void CreateLine(Star starA, Star starB)
     {
-        LineRenderer line = new GameObject("Line").AddComponent<LineRenderer>();
+        GameObject lineObj = new GameObject("Line");
+        lineObj.transform.SetParent(transform);
+        LineRenderer line = lineObj.AddComponent<LineRenderer>();
         line.positionCount = 2;
         line.SetPosition(0, starA.transform.position);
         line.SetPosition(1, starB.transform.position);
@@ -35,6 +37,11 @@ public class LineManager : MonoBehaviour
 
         line.material = new Material(Shader.Find("Sprites/Default"));
         line.material.color = lineColor;
+
+        // store star references for visibility updates
+        LineVisibility visibility = lineObj.AddComponent<LineVisibility>();
+        visibility.starA = starA;
+        visibility.starB = starB;
     }
 
     public void UpdateLines(Star starA, Star starB)
@@ -67,6 +74,14 @@ public class LineManager : MonoBehaviour
         foreach (Star neighbor in neighbors)
         {
             UpdateLines(star, neighbor);
+        }
+    }
+
+    public void UpdateLinesVisibility(HashSet<Star> visibleStars)
+    {
+        foreach (LineVisibility lv in GetComponentsInChildren<LineVisibility>())
+        {
+            lv.UpdateVisibility(visibleStars);
         }
     }
 }

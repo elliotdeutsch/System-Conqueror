@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class GameSetupUI : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class GameSetupUI : MonoBehaviour
     public TMP_InputField widthInput;
     public TMP_InputField heightInput;
     public TMP_InputField starsInput;
+    public Toggle farStarsToggle;
 
     void Start()
     {
@@ -38,6 +40,11 @@ public class GameSetupUI : MonoBehaviour
         {
             starsInput.text = galaxyManager.numberOfStars.ToString();
         }
+
+        if (farStarsToggle != null)
+        {
+            farStarsToggle.isOn = galaxyManager.showFarStars;
+        }
     }
 
     public void OnPlayClicked()
@@ -59,6 +66,10 @@ public class GameSetupUI : MonoBehaviour
         if (starsInput != null && int.TryParse(starsInput.text, out int stars))
         {
             galaxyManager.numberOfStars = Mathf.Clamp(stars, 10, 1000);
+        }
+        if (farStarsToggle != null)
+        {
+            galaxyManager.showFarStars = farStarsToggle.isOn;
         }
 
         if (setupPanel != null)

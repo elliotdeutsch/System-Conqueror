@@ -30,6 +30,7 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
+    private bool isVisible = true;
     public Color neutralColor = Color.white;
 
     private int lastGeneratedTime;
@@ -54,6 +55,8 @@ public class Star : MonoBehaviour
         // Initialement cacher les effets de survol et de sélection
         hoverEffect.SetActive(false);
         selectedEffect.SetActive(false);
+
+        UpdateText();
     }
 
     void OnDestroy()
@@ -89,7 +92,16 @@ public class Star : MonoBehaviour
 
     void Update()
     {
-        // Mettre à jour la couleur du texte en fonction du propriétaire
+        UpdateText();
+    }
+
+    private void UpdateText()
+    {
+        if (!isVisible)
+        {
+            textMesh.text = "";
+            return;
+        }
         if (Owner != null)
         {
             textMesh.color = Owner.Color;
@@ -99,7 +111,6 @@ public class Star : MonoBehaviour
             textMesh.color = neutralColor;
         }
 
-        // Mise à jour du texte sans changer la position
         textMesh.text = $"{starName}\nUnits: {units}";
     }
 
@@ -117,6 +128,20 @@ public class Star : MonoBehaviour
     {
         isSelected = selected;
         SetColorBasedOnOwner();
+    }
+
+    public void SetVisibility(bool visible)
+    {
+        isVisible = visible;
+        if (isVisible)
+        {
+            SetColorBasedOnOwner();
+        }
+        else
+        {
+            GetComponent<SpriteRenderer>().color = Color.gray;
+        }
+        UpdateText();
     }
 
     public void Conquer(Star fromStar, int attackingUnits)
@@ -165,6 +190,7 @@ public class Star : MonoBehaviour
             if (galaxyManager != null)
             {
                 galaxyManager.UpdatePlayerListUI();
+                galaxyManager.UpdateFogOfWar();
             }
         }
         else
