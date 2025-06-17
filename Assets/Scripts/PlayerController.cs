@@ -16,7 +16,11 @@ public class PlayerController : MonoBehaviour
     public GameObject unitPrefab;
     private List<Star> selectedStars = new List<Star>();
     private Star hoveredStar;
-    private int unitsToSend = 10;
+    [Header("Unit send amount per key")]
+    [Tooltip("Units sent when pressing the A key")]
+    public int unitsForKeyA = 10;
+    [Tooltip("Units sent when pressing the E key")]
+    public int unitsForKeyE = 100;
     public float unitSpeed = 2.0f;
     private GalaxyManager galaxyManager;
     private LineRenderer hoverLine;
@@ -77,32 +81,44 @@ public class PlayerController : MonoBehaviour
 
     void HandleUnitSend()
     {
-        if (Input.GetKeyDown(KeyCode.O) && hoveredStar != null && selectedStars.Count > 0)
-        {
-            foreach (Star selectedStar in selectedStars)
-            {
-                if (selectedStar.owner == "Player")
-                {
-                    int unitsToSendFromStar = Mathf.Min(unitsToSend, selectedStar.units);
+        if (hoveredStar == null || selectedStars.Count == 0)
+            return;
 
-                    if (unitsToSendFromStar > 0)
-                    {
-                        PathFinding pathFinding = FindObjectOfType<PathFinding>();
-                        List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
-                        if (path.Count > 0)
-                        {
-                            StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
-                        }
-                        else
-                        {
-                            Debug.LogWarning("No path found!");
-                        }
-                    }
-                    else
-                    {
-                        Debug.LogWarning("No units to send!");
-                    }
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            SendUnitsFromSelected(unitsForKeyA);
+        }
+        else if (Input.GetKeyDown(KeyCode.E))
+        {
+            SendUnitsFromSelected(unitsForKeyE);
+        }
+    }
+
+    void SendUnitsFromSelected(int unitsToSend)
+    {
+        foreach (Star selectedStar in selectedStars)
+        {
+            if (selectedStar.owner != "Player")
+                continue;
+
+            int unitsToSendFromStar = Mathf.Min(unitsToSend, selectedStar.units);
+
+            if (unitsToSendFromStar > 0)
+            {
+                PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
+                if (path.Count > 0)
+                {
+                    StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
                 }
+                else
+                {
+                    Debug.LogWarning("No path found!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("No units to send!");
             }
         }
     }
