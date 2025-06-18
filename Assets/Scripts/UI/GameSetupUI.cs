@@ -71,6 +71,10 @@ public class GameSetupUI : MonoBehaviour
         {
             galaxyManager.showFarStars = farStarsToggle.isOn;
         }
+        else
+        {
+            Debug.LogWarning("Far Stars Toggle is not assigned to GameSetupUI. Visibility option will use the default value.");
+        }
 
         if (setupPanel != null)
         {
