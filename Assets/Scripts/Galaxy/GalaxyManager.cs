@@ -32,7 +32,7 @@ public class GalaxyManager : MonoBehaviour
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
 
     // When false, player only sees owned stars and their immediate neighbours
-    public bool showFarStars = true;
+    public bool showFarStars = false;
     private StarNameGenerator starNameGenerator;
     private PathFinding pathFinding; // Nouvelle référence à PathFinding
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
@@ -229,10 +229,12 @@ public class GalaxyManager : MonoBehaviour
 
         if (showFarStars || controlledPlayer == null)
         {
+            // Mode sans fog of war : toutes les étoiles sont considérées comme visibles
             visibleStars.UnionWith(stars);
         }
         else
         {
+            // Mode fog of war : seulement les étoiles possédées et leurs voisines
             foreach (Star owned in controlledPlayer.Stars)
             {
                 visibleStars.Add(owned);
@@ -244,6 +246,7 @@ public class GalaxyManager : MonoBehaviour
             }
         }
 
+        // Toutes les étoiles sont affichées, mais leur état dépend de leur présence dans visibleStars
         foreach (Star s in stars)
         {
             s.SetVisibility(visibleStars.Contains(s));
@@ -252,7 +255,7 @@ public class GalaxyManager : MonoBehaviour
         LineManager lineManager = FindObjectOfType<LineManager>();
         if (lineManager != null)
         {
-            lineManager.UpdateLinesVisibility(visibleStars);
+            lineManager.ForceUpdateAllLines();
         }
     }
 

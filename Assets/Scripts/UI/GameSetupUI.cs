@@ -44,6 +44,9 @@ public class GameSetupUI : MonoBehaviour
         if (farStarsToggle != null)
         {
             farStarsToggle.isOn = galaxyManager.showFarStars;
+            var label = farStarsToggle.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (label != null)
+                label.text = "Afficher toutes les étoiles (désactive le brouillard)";
         }
     }
 
@@ -70,6 +73,7 @@ public class GameSetupUI : MonoBehaviour
         if (farStarsToggle != null)
         {
             galaxyManager.showFarStars = farStarsToggle.isOn;
+            Debug.Log($"Fog of War initial: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")}");
         }
         else
         {

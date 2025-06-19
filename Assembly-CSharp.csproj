@@ -72,7 +72,6 @@
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\ObjectSpin.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\SimpleScript.cs" />
     <Compile Include="Assets\Scripts\Galaxy\LineManager.cs" />
-    <Compile Include="Assets\Scripts\Galaxy\LineVisibility.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
     <Compile Include="Assets\Scripts\Galaxy\StartingStarAssignment.cs" />
@@ -93,6 +92,7 @@
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\Scripts\UnitManager.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs" />
+    <Compile Include="Assets\Scripts\Galaxy\LineVisibility.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\DropdownSample.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark02.cs" />
@@ -102,15 +102,18 @@
     <Compile Include="Assets\Scripts\UI\UnitSendSettingsUI.cs" />
     <Compile Include="Assets\Scripts\UI\GameSetupUI.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TextMeshSpawner.cs" />
+    <Compile Include="Assets\Scripts\UI\FogOfWarUI.cs" />
     <Compile Include="Assets\Scripts\AI\BasicEnemyAI.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\VertexZoom.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextInfoDebugTool.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\SkewTextExample.cs" />
+    <Compile Include="Assets\Scripts\UnitGlowSettings.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_A.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_ExampleScript_01.cs" />
     <Compile Include="Assets\Scripts\UI\UIManager.cs" />
     <Compile Include="Assets\Scripts\PlayerController.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_FrameRateCounter.cs" />
+    <Compile Include="Assets\Scripts\UI\FogOfWarTest.cs" />
     <Compile Include="Assets\Scripts\Galaxy\GalaxyManager.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\Benchmark03.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextSelector_B.cs" />
