@@ -61,7 +61,17 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10); // Assurez-vous que les unités envoyées ne laissent pas la star d'origine vulnérable
+        // Règle différente pour IA et joueur :
+        if (fromStar.Owner != null && galaxyManager != null && fromStar.Owner == galaxyManager.controlledPlayer)
+        {
+            // Joueur : peut envoyer 100% de ses unités
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units);
+        }
+        else
+        {
+            // IA : doit laisser au moins 10 unités
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
+        }
 
         if (unitsToSend <= 0)
         {
@@ -179,7 +189,7 @@ public class UnitManager : MonoBehaviour
                 }
 
                 // Masquer/afficher l'effet de glow aussi
-                Transform glowEffect = unitInstance.transform.Find("GlowEffect");
+                Transform glowEffect = unitInstance.transform.Find("NeonGlow");
                 if (glowEffect != null)
                 {
                     SpriteRenderer glowRenderer = glowEffect.GetComponent<SpriteRenderer>();

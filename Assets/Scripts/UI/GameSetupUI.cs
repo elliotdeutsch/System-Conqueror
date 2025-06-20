@@ -72,7 +72,7 @@ public class GameSetupUI : MonoBehaviour
         }
         if (farStarsToggle != null)
         {
-            galaxyManager.showFarStars = farStarsToggle.isOn;
+            galaxyManager.showFarStars = !farStarsToggle.isOn;
             Debug.Log($"Fog of War initial: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")}");
         }
         else
@@ -86,6 +86,7 @@ public class GameSetupUI : MonoBehaviour
         }
 
         galaxyManager.InitializeGalaxy();
+        galaxyManager.UpdateFogOfWar();
 
         if (GameTimer.Instance != null)
         {

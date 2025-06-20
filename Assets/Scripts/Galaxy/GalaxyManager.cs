@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using TMPro;
+using System.Collections;
 
 /*
 Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
@@ -117,8 +118,8 @@ public class GalaxyManager : MonoBehaviour
             }
         }
 
-        UpdatePlayerListUI(); // Mettre à jour l'UI de la liste des joueurs
-        UpdateFogOfWar();
+        UpdatePlayerListUI();
+        StartCoroutine(DelayedFogOfWar());
     }
 
     void GenerateGalaxy()
@@ -259,4 +260,9 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
+    private IEnumerator DelayedFogOfWar()
+    {
+        yield return null; // attendre la fin du frame, donc tous les Start()
+        UpdateFogOfWar();
+    }
 }

@@ -163,6 +163,8 @@ public class Star : MonoBehaviour
                 textMesh.color = Color.gray;
                 textMesh.text = starName; // Affiche seulement le nom
             }
+            // Empêcher toute réapplication de la couleur propriétaire
+            // (par exemple via Start ou un autre script)
         }
         // Toujours désactiver les effets si hors vision
         if (!isVisible)
