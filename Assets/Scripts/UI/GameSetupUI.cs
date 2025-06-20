@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class GameSetupUI : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class GameSetupUI : MonoBehaviour
     public TMP_InputField widthInput;
     public TMP_InputField heightInput;
     public TMP_InputField starsInput;
+    public Toggle farStarsToggle;
 
     void Start()
     {
@@ -38,6 +40,14 @@ public class GameSetupUI : MonoBehaviour
         {
             starsInput.text = galaxyManager.numberOfStars.ToString();
         }
+
+        if (farStarsToggle != null)
+        {
+            farStarsToggle.isOn = galaxyManager.showFarStars;
+            var label = farStarsToggle.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            if (label != null)
+                label.text = "Afficher toutes les étoiles (désactive le brouillard)";
+        }
     }
 
     public void OnPlayClicked()
@@ -60,6 +70,15 @@ public class GameSetupUI : MonoBehaviour
         {
             galaxyManager.numberOfStars = Mathf.Clamp(stars, 10, 1000);
         }
+        if (farStarsToggle != null)
+        {
+            galaxyManager.showFarStars = !farStarsToggle.isOn;
+            Debug.Log($"Fog of War initial: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")}");
+        }
+        else
+        {
+            Debug.LogWarning("Far Stars Toggle is not assigned to GameSetupUI. Visibility option will use the default value.");
+        }
 
         if (setupPanel != null)
         {
@@ -67,6 +86,7 @@ public class GameSetupUI : MonoBehaviour
         }
 
         galaxyManager.InitializeGalaxy();
+        galaxyManager.UpdateFogOfWar();
 
         if (GameTimer.Instance != null)
         {

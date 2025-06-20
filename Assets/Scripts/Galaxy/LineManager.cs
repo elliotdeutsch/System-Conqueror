@@ -15,7 +15,9 @@ public class LineManager : MonoBehaviour
 
     public void CreateLine(Star starA, Star starB)
     {
-        LineRenderer line = new GameObject("Line").AddComponent<LineRenderer>();
+        GameObject lineObj = new GameObject("Line");
+        lineObj.transform.SetParent(transform);
+        LineRenderer line = lineObj.AddComponent<LineRenderer>();
         line.positionCount = 2;
         line.SetPosition(0, starA.transform.position);
         line.SetPosition(1, starB.transform.position);
@@ -24,17 +26,21 @@ public class LineManager : MonoBehaviour
         line.startWidth = 0.2f;
         line.endWidth = 0.2f;
 
-        // Définir la transparence de la ligne
-        Color lineColor = new Color(1f, 1f, 1f, 0.1f); // 10% d'opacité
-
-        // Vérifier les propriétaires des étoiles pour définir la couleur
-        if (starA.Owner != null && starB.Owner != null && starA.Owner == starB.Owner)
-        {
-            lineColor = starA.Owner.Color; // Utiliser la couleur du propriétaire de l'étoile A
-        }
-
+        // Ne pas définir de couleur ici, laisser LineVisibility gérer
         line.material = new Material(Shader.Find("Sprites/Default"));
-        line.material.color = lineColor;
+
+        // store star references for visibility updates
+        LineVisibility visibility = lineObj.AddComponent<LineVisibility>();
+        visibility.starA = starA;
+        visibility.starB = starB;
+
+        // Mettre à jour immédiatement la visibilité selon l'état actuel du fog of war
+        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        if (galaxyManager != null)
+        {
+            // Forcer la mise à jour de toutes les lignes
+            galaxyManager.UpdateFogOfWar();
+        }
     }
 
     public void UpdateLines(Star starA, Star starB)
@@ -67,6 +73,43 @@ public class LineManager : MonoBehaviour
         foreach (Star neighbor in neighbors)
         {
             UpdateLines(star, neighbor);
+        }
+    }
+
+    public void UpdateLinesVisibility(HashSet<Star> visibleStars)
+    {
+        foreach (LineVisibility lv in GetComponentsInChildren<LineVisibility>())
+        {
+            lv.UpdateVisibility(visibleStars);
+        }
+    }
+
+    public void ForceUpdateAllLines()
+    {
+        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        if (galaxyManager != null)
+        {
+            HashSet<Star> visibleStars = new HashSet<Star>();
+            if (galaxyManager.showFarStars || galaxyManager.controlledPlayer == null)
+            {
+                visibleStars.UnionWith(galaxyManager.stars);
+            }
+            else
+            {
+                foreach (Star owned in galaxyManager.controlledPlayer.Stars)
+                {
+                    visibleStars.Add(owned);
+                    // Utiliser StarGraphManager pour obtenir les voisins
+                    StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+                    if (starGraphManager != null)
+                    {
+                        List<Star> neighbors = starGraphManager.GetNeighbors(owned);
+                        foreach (Star n in neighbors)
+                            visibleStars.Add(n);
+                    }
+                }
+            }
+            UpdateLinesVisibility(visibleStars);
         }
     }
 }

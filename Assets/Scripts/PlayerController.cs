@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 /* 
 Ce script contrôle les interactions du joueur avec les étoiles dans le jeu. 
@@ -38,6 +39,9 @@ public class PlayerController : MonoBehaviour
     private LineRenderer hoverLine;
     private List<LineRenderer> hoverLines = new List<LineRenderer>();
 
+    // Référence pour afficher l'état du fog of war
+    [SerializeField] private TextMeshProUGUI fogOfWarStatusText;
+
     void Start()
     {
         galaxyManager = FindObjectOfType<GalaxyManager>();
@@ -53,17 +57,30 @@ public class PlayerController : MonoBehaviour
             line.positionCount = 2;
             line.startWidth = 0.2f;
             line.endWidth = 0.2f;
-            line.startColor = Color.white;
-            line.endColor = Color.white;
+            line.startColor = new Color(1, 1, 1, 0.5f); // Couleur blanche semi-transparente
+            line.endColor = new Color(1, 1, 1, 0.5f); // Couleur blanche semi-transparente
             line.enabled = false; // Désactiver initialement
             hoverLines.Add(line);
         }
+
+        // Initialiser l'affichage du fog of war
+        UpdateFogOfWarDisplay();
     }
+
+    public void UpdateFogOfWarDisplay()
+    {
+        if (fogOfWarStatusText != null && galaxyManager != null)
+        {
+            fogOfWarStatusText.text = $"Fog of War: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")} (Appuyez sur F pour basculer)";
+        }
+    }
+
     void Update()
     {
         HandleMouseClick();
         HandleUnitSend();
         CheckHoveredStar();
+        HandleFogOfWarToggle();
     }
 
     void HandleMouseClick()
@@ -230,5 +247,28 @@ public class PlayerController : MonoBehaviour
             star.selectedEffect.SetActive(false); // Désactiver l'effet de sélection
         }
         selectedStars.Clear();
+    }
+
+    void HandleFogOfWarToggle()
+    {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (galaxyManager != null)
+            {
+                galaxyManager.showFarStars = !galaxyManager.showFarStars;
+                galaxyManager.UpdateFogOfWar();
+                Debug.Log($"Fog of War: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")}");
+
+                // Mettre à jour l'affichage du texte
+                UpdateFogOfWarDisplay();
+
+                // Forcer la mise à jour de toutes les lignes
+                LineManager lineManager = FindObjectOfType<LineManager>();
+                if (lineManager != null)
+                {
+                    lineManager.ForceUpdateAllLines();
+                }
+            }
+        }
     }
 }

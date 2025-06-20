@@ -56,5 +56,10 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "System Conqueror.sln"
+    "dotnet.defaultSolution": "System Conqueror.sln",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#163409",
+        "titleBar.activeBackground": "#1F490C",
+        "titleBar.activeForeground": "#F4FCF0"
+    }
 }

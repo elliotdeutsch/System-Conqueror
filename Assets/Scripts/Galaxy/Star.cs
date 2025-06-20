@@ -30,6 +30,7 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
+    private bool isVisible = true;
     public Color neutralColor = Color.white;
 
     private int lastGeneratedTime;
@@ -54,6 +55,8 @@ public class Star : MonoBehaviour
         // Initialement cacher les effets de survol et de sélection
         hoverEffect.SetActive(false);
         selectedEffect.SetActive(false);
+
+        UpdateText();
     }
 
     void OnDestroy()
@@ -89,7 +92,17 @@ public class Star : MonoBehaviour
 
     void Update()
     {
-        // Mettre à jour la couleur du texte en fonction du propriétaire
+        // Ne plus appeler UpdateText() ici car SetVisibility() gère déjà l'affichage
+        // UpdateText() est appelé uniquement quand nécessaire dans SetVisibility()
+    }
+
+    private void UpdateText()
+    {
+        if (!isVisible)
+        {
+            textMesh.text = "";
+            return;
+        }
         if (Owner != null)
         {
             textMesh.color = Owner.Color;
@@ -99,7 +112,6 @@ public class Star : MonoBehaviour
             textMesh.color = neutralColor;
         }
 
-        // Mise à jour du texte sans changer la position
         textMesh.text = $"{starName}\nUnits: {units}";
     }
 
@@ -119,6 +131,52 @@ public class Star : MonoBehaviour
         SetColorBasedOnOwner();
     }
 
+    public void SetVisibility(bool visible)
+    {
+        isVisible = visible;
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = true;
+        }
+        if (textMesh != null)
+        {
+            textMesh.gameObject.SetActive(true);
+        }
+        if (isVisible)
+        {
+            SetColorBasedOnOwner();
+            if (textMesh != null)
+            {
+                textMesh.color = (Owner != null) ? Owner.Color : neutralColor;
+                textMesh.text = $"{starName}\nUnits: {units}";
+            }
+        }
+        else
+        {
+            // Planète hors champ de vision : gris semi-transparent, pas d'info propriétaire ni unités
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.color = new Color(0.6f, 0.6f, 0.6f, 0.05f); // gris semi-transparent
+            }
+            if (textMesh != null)
+            {
+                textMesh.color = Color.gray;
+                textMesh.text = starName; // Affiche seulement le nom
+            }
+            // Empêcher toute réapplication de la couleur propriétaire
+            // (par exemple via Start ou un autre script)
+        }
+        // Toujours désactiver les effets si hors vision
+        if (!isVisible)
+        {
+            if (hoverEffect != null) hoverEffect.SetActive(false);
+            if (selectedEffect != null) selectedEffect.SetActive(false);
+        }
+    }
+
+    // Ajout : méthode utilitaire pour savoir si la planète est visible (champ de vision)
+    public bool IsInVision() => isVisible;
+
     public void Conquer(Star fromStar, int attackingUnits)
     {
         if (attackingUnits >= units)
@@ -126,45 +184,48 @@ public class Star : MonoBehaviour
             units = attackingUnits - units;
             isNeutral = false;
 
-            // Retirer cette étoile de la liste des étoiles du propriétaire précédent
             if (Owner != null)
             {
                 Owner.Stars.Remove(this);
             }
-
-            // Assigner le nouveau propriétaire
             Owner = fromStar.Owner;
-
-            // Ajouter cette étoile à la liste des étoiles du nouveau propriétaire
             if (Owner != null)
             {
                 Owner.Stars.Add(this);
             }
-
-            // Changer le type de l'étoile si elle était une capitale
             if (starType == StarType.Capital)
             {
                 starType = StarType.Conquered;
             }
-
-            SetColorBasedOnOwner();
-            PlayExplosion();
-            StartCoroutine(GenerateUnits(2, 5));
-
+            // Si la planète est visible, animation normale, sinon reste grise
+            if (isVisible)
+            {
+                SetColorBasedOnOwner();
+                PlayExplosion();
+                StartCoroutine(GenerateUnits(2, 5));
+                StartCoroutine(ExplosionAnimation());
+            }
+            else
+            {
+                if (spriteRenderer != null)
+                    spriteRenderer.color = new Color(0.6f, 0.6f, 0.6f, 0.5f);
+            }
             LineManager lineManager = FindObjectOfType<LineManager>();
             if (lineManager != null)
             {
                 lineManager.UpdateAllLines(this);
                 lineManager.UpdateAllLines(fromStar);
             }
-
-            StartCoroutine(ExplosionAnimation());
-
-            // Mettre à jour l'interface utilisateur
             GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
             if (galaxyManager != null)
             {
                 galaxyManager.UpdatePlayerListUI();
+                galaxyManager.UpdateFogOfWar();
+                PlayerController playerController = FindObjectOfType<PlayerController>();
+                if (playerController != null)
+                {
+                    playerController.UpdateFogOfWarDisplay();
+                }
             }
         }
         else

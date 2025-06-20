@@ -61,7 +61,17 @@ public class UnitManager : MonoBehaviour
             yield break;
         }
 
-        unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10); // Assurez-vous que les unités envoyées ne laissent pas la star d'origine vulnérable
+        // Règle différente pour IA et joueur :
+        if (fromStar.Owner != null && galaxyManager != null && fromStar.Owner == galaxyManager.controlledPlayer)
+        {
+            // Joueur : peut envoyer 100% de ses unités
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units);
+        }
+        else
+        {
+            // IA : doit laisser au moins 10 unités
+            unitsToSend = Mathf.Min(unitsToSend, fromStar.units - 10);
+        }
 
         if (unitsToSend <= 0)
         {
@@ -82,6 +92,27 @@ public class UnitManager : MonoBehaviour
         if (unitSpriteRenderer != null)
         {
             unitSpriteRenderer.sortingOrder = 1;
+
+            // Ajouter l'effet de glow/neon seulement si activé
+            if (UnitGlowSettings.Instance != null && UnitGlowSettings.Instance.EnableGlow)
+            {
+                Material glowMaterial = new Material(unitSpriteRenderer.material);
+                glowMaterial.EnableKeyword("_EMISSION");
+
+                // Couleur d'émission basée sur le propriétaire de l'unité
+                Color emissionColor = Color.white; // Couleur par défaut
+                if (fromStar.Owner != null)
+                {
+                    emissionColor = fromStar.Owner.Color;
+                }
+
+                // Intensité de l'émission depuis les paramètres
+                float emissionIntensity = UnitGlowSettings.Instance.GlowIntensity;
+                glowMaterial.SetColor("_EmissionColor", emissionColor * emissionIntensity);
+
+                // Appliquer le matériau avec émission
+                unitSpriteRenderer.material = glowMaterial;
+            }
         }
         // Ajoutez un GameObject enfant pour TextMeshPro
         GameObject textObject = new GameObject("UnitText");
@@ -91,12 +122,35 @@ public class UnitManager : MonoBehaviour
         textMesh.fontSize = 5;
         textMesh.text = unitsToSend.ToString();
 
+        // Ajouter l'effet de glow sur le texte
+        textMesh.enableAutoSizing = false;
+        textMesh.fontSize = 5;
+
+        // Couleur du texte basée sur le propriétaire
+        Color textColor = Color.white;
+        if (fromStar.Owner != null)
+        {
+            textColor = fromStar.Owner.Color;
+        }
+        textMesh.color = textColor;
+
+        // Effet de glow sur le texte seulement si activé
+        if (UnitGlowSettings.Instance != null && UnitGlowSettings.Instance.EnableTextGlow)
+        {
+            textMesh.fontMaterial.EnableKeyword("_EMISSION");
+            float textEmissionIntensity = UnitGlowSettings.Instance.TextGlowIntensity;
+            textMesh.fontMaterial.SetColor("_EmissionColor", textColor * textEmissionIntensity);
+        }
+
         RectTransform rectTransform = textObject.GetComponent<RectTransform>();
         rectTransform.localPosition = new Vector3(0, 0.5f, 0);
         rectTransform.sizeDelta = new Vector2(1, 1);
 
         unitScript.textMesh = textMesh; // Associez le composant texte à l'unité
         unitScript.Initialize(fromStar, path[path.Count - 1], unitsToSend);
+
+        // Créer un effet de glow alternatif avec un sprite enfant
+        CreateNeonGlow(unitInstance, fromStar.Owner);
 
         for (int i = 1; i < path.Count; i++)
         {
@@ -107,6 +161,44 @@ public class UnitManager : MonoBehaviour
 
             while (unitInstance.transform.position != currentStar.transform.position)
             {
+                // Vérifier si l'unité doit être visible selon le fog of war
+                bool shouldBeVisible = true;
+                if (galaxyManager != null && !galaxyManager.showFarStars && galaxyManager.controlledPlayer != null)
+                {
+                    // Vérifier si la position actuelle de l'unité est dans le champ de vision
+                    bool inVision = false;
+                    foreach (Star owned in galaxyManager.controlledPlayer.Stars)
+                    {
+                        if (Vector3.Distance(unitInstance.transform.position, owned.transform.position) < 10f) // Distance de vision
+                        {
+                            inVision = true;
+                            break;
+                        }
+                    }
+                    shouldBeVisible = inVision;
+                }
+
+                // Masquer/afficher l'unité selon la visibilité
+                if (unitSpriteRenderer != null)
+                {
+                    unitSpriteRenderer.enabled = shouldBeVisible;
+                }
+                if (textMesh != null)
+                {
+                    textMesh.enabled = shouldBeVisible;
+                }
+
+                // Masquer/afficher l'effet de glow aussi
+                Transform glowEffect = unitInstance.transform.Find("NeonGlow");
+                if (glowEffect != null)
+                {
+                    SpriteRenderer glowRenderer = glowEffect.GetComponent<SpriteRenderer>();
+                    if (glowRenderer != null)
+                    {
+                        glowRenderer.enabled = shouldBeVisible;
+                    }
+                }
+
                 unitInstance.transform.position = Vector3.MoveTowards(unitInstance.transform.position, currentStar.transform.position, unitSpeed * Time.deltaTime);
                 yield return null;
             }
@@ -151,5 +243,27 @@ public class UnitManager : MonoBehaviour
         {
             StartCoroutine(MoveUnits(fromStar, path, unitsToSend));
         }
+    }
+
+    void CreateNeonGlow(GameObject unitInstance, Player owner)
+    {
+        // Crée un GameObject enfant pour le halo
+        GameObject glow = new GameObject("NeonGlow");
+        glow.transform.SetParent(unitInstance.transform);
+        glow.transform.localPosition = Vector3.zero;
+        glow.transform.localScale = Vector3.one * 2.5f; // Ajuste la taille selon l'effet voulu
+
+        // Ajoute un SpriteRenderer pour le halo
+        SpriteRenderer glowRenderer = glow.AddComponent<SpriteRenderer>();
+        // Charge le sprite de halo
+        glowRenderer.sprite = Resources.Load<Sprite>("Sprites/glow"); // Doit être dans Assets/Resources/Sprites/glow.png
+
+        // Couleur du halo = couleur du propriétaire, très saturée
+        Color glowColor = owner != null ? owner.Color : Color.white;
+        glowColor.a = 1f; // Transparence
+        glowRenderer.color = glowColor;
+
+        // S'assure que le halo est derrière l'unité
+        glowRenderer.sortingOrder = 0;
     }
 }

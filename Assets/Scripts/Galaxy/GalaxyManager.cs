@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using TMPro;
+using System.Collections;
 
 /*
 Ce script gère la génération, la connexion et la navigation au sein d'une galaxie 
@@ -30,6 +31,9 @@ public class GalaxyManager : MonoBehaviour
     public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
+
+    // When false, player only sees owned stars and their immediate neighbours
+    public bool showFarStars = false;
     private StarNameGenerator starNameGenerator;
     private PathFinding pathFinding; // Nouvelle référence à PathFinding
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager
@@ -114,7 +118,8 @@ public class GalaxyManager : MonoBehaviour
             }
         }
 
-        UpdatePlayerListUI(); // Mettre à jour l'UI de la liste des joueurs
+        UpdatePlayerListUI();
+        StartCoroutine(DelayedFogOfWar());
     }
 
     void GenerateGalaxy()
@@ -218,5 +223,46 @@ public class GalaxyManager : MonoBehaviour
         }
     }
 
+    // Met à jour la visibilité des étoiles et des lignes selon l'option choisie
+    public void UpdateFogOfWar()
+    {
+        HashSet<Star> visibleStars = new HashSet<Star>();
 
+        if (showFarStars || controlledPlayer == null)
+        {
+            // Mode sans fog of war : toutes les étoiles sont considérées comme visibles
+            visibleStars.UnionWith(stars);
+        }
+        else
+        {
+            // Mode fog of war : seulement les étoiles possédées et leurs voisines
+            foreach (Star owned in controlledPlayer.Stars)
+            {
+                visibleStars.Add(owned);
+                if (starGraph.TryGetValue(owned, out List<Star> neigh))
+                {
+                    foreach (Star n in neigh)
+                        visibleStars.Add(n);
+                }
+            }
+        }
+
+        // Toutes les étoiles sont affichées, mais leur état dépend de leur présence dans visibleStars
+        foreach (Star s in stars)
+        {
+            s.SetVisibility(visibleStars.Contains(s));
+        }
+
+        LineManager lineManager = FindObjectOfType<LineManager>();
+        if (lineManager != null)
+        {
+            lineManager.ForceUpdateAllLines();
+        }
+    }
+
+    private IEnumerator DelayedFogOfWar()
+    {
+        yield return null; // attendre la fin du frame, donc tous les Start()
+        UpdateFogOfWar();
+    }
 }
