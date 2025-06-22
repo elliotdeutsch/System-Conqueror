@@ -7,8 +7,6 @@ public class GameSetupUI : MonoBehaviour
     public GalaxyManager galaxyManager;
     public GameObject setupPanel;
     public TMP_InputField aiInput;
-    public TMP_InputField widthInput;
-    public TMP_InputField heightInput;
     public TMP_InputField starsInput;
     public Toggle farStarsToggle;
 
@@ -27,14 +25,6 @@ public class GameSetupUI : MonoBehaviour
         if (aiInput != null)
         {
             aiInput.text = galaxyManager.numberOfAI.ToString();
-        }
-        if (widthInput != null)
-        {
-            widthInput.text = galaxyManager.mapWidth.ToString();
-        }
-        if (heightInput != null)
-        {
-            heightInput.text = galaxyManager.mapHeight.ToString();
         }
         if (starsInput != null)
         {
@@ -58,14 +48,6 @@ public class GameSetupUI : MonoBehaviour
         {
             galaxyManager.numberOfAI = Mathf.Max(0, ai);
         }
-        if (widthInput != null && float.TryParse(widthInput.text, out float width))
-        {
-            galaxyManager.mapWidth = Mathf.Max(10f, width);
-        }
-        if (heightInput != null && float.TryParse(heightInput.text, out float height))
-        {
-            galaxyManager.mapHeight = Mathf.Max(10f, height);
-        }
         if (starsInput != null && int.TryParse(starsInput.text, out int stars))
         {
             galaxyManager.numberOfStars = Mathf.Clamp(stars, 10, 1000);
@@ -73,7 +55,6 @@ public class GameSetupUI : MonoBehaviour
         if (farStarsToggle != null)
         {
             galaxyManager.showFarStars = !farStarsToggle.isOn;
-            Debug.Log($"Fog of War initial: {(galaxyManager.showFarStars ? "Désactivé" : "Activé")}");
         }
         else
         {
@@ -90,7 +71,20 @@ public class GameSetupUI : MonoBehaviour
 
         if (GameTimer.Instance != null)
         {
-            GameTimer.Instance.StartTimer();
+            GameTimer.Instance.ResetAndStartTimer();
+        }
+
+        // Démarrer le jeu après la configuration
+        if (GameTimeController.Instance != null)
+        {
+            GameTimeController.Instance.StartGame();
+        }
+
+        // Centrer la caméra sur le joueur après l'initialisation
+        CameraController cameraController = FindObjectOfType<CameraController>();
+        if (cameraController != null)
+        {
+            cameraController.CenterOnPlayer();
         }
     }
 }

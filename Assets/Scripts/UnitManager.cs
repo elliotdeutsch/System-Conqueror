@@ -80,6 +80,7 @@ public class UnitManager : MonoBehaviour
         }
 
         fromStar.units -= unitsToSend;
+        if (fromStar.isVisible) fromStar.UpdateText();
 
         GameObject unitInstance = Instantiate(unitPrefab, fromStar.transform.position, Quaternion.identity);
         Unit unitScript = unitInstance.GetComponent<Unit>();
@@ -210,6 +211,7 @@ public class UnitManager : MonoBehaviour
             else if (currentStar.Owner == fromStar.Owner && currentStar == path[path.Count - 1])
             {
                 currentStar.units += unitsToSend;
+                if (currentStar.isVisible) currentStar.UpdateText();
                 Destroy(unitInstance);
                 yield break;
             }
@@ -224,6 +226,7 @@ public class UnitManager : MonoBehaviour
                 else
                 {
                     currentStar.units -= unitsToSend;
+                    if (currentStar.isVisible) currentStar.UpdateText();
                     Destroy(unitInstance);
                     yield break;
                 }

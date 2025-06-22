@@ -17,6 +17,9 @@ public class GameTimer : MonoBehaviour
     public int currentTime { get; private set; }
     public event Action OnFiveSecondInterval;
 
+    private bool isRunning = false;
+    private float accumulatedTime = 0f;
+
     void Awake()
     {
         if (Instance == null)
@@ -30,11 +33,18 @@ public class GameTimer : MonoBehaviour
         }
     }
 
-    private bool isRunning = false;
-
     void Start()
     {
         currentTime = 0;
+        isRunning = false; // S'assurer qu'il ne tourne pas au démarrage
+        // Ne pas démarrer automatiquement, attendre l'appel explicite
+    }
+
+    public void ResetAndStartTimer()
+    {
+        currentTime = 0;
+        accumulatedTime = 0f;
+        StartTimer();
     }
 
     public void StartTimer()
@@ -50,13 +60,22 @@ public class GameTimer : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(1);
-            currentTime++;
+            // Utiliser Time.deltaTime pour respecter le timeScale
+            accumulatedTime += Time.deltaTime;
 
-            if (currentTime % 5 == 0)
+            // Incrémenter le timer chaque seconde réelle (pas affecté par timeScale)
+            if (accumulatedTime >= 1f)
             {
-                OnFiveSecondInterval?.Invoke();
+                currentTime++;
+                accumulatedTime -= 1f;
+
+                if (currentTime % 5 == 0)
+                {
+                    OnFiveSecondInterval?.Invoke();
+                }
             }
+
+            yield return null;
         }
     }
 }

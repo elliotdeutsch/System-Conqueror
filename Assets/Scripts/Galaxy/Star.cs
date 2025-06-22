@@ -30,7 +30,7 @@ public class Star : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private CircleCollider2D circleCollider;
     private bool isSelected = false;
-    private bool isVisible = true;
+    public bool isVisible = true;
     public Color neutralColor = Color.white;
 
     private int lastGeneratedTime;
@@ -43,6 +43,18 @@ public class Star : MonoBehaviour
         circleCollider = GetComponent<CircleCollider2D>();
         hoverEffect = transform.Find("HoverEffect").gameObject;
         selectedEffect = transform.Find("SelectedEffect").gameObject;
+
+        // Ajout du glow sous la planète
+        GameObject glow = new GameObject("StarGlow");
+        glow.transform.SetParent(transform);
+        glow.transform.localPosition = Vector3.zero;
+        glow.transform.localScale = Vector3.one * 0.4f;
+        SpriteRenderer glowRenderer = glow.AddComponent<SpriteRenderer>();
+        glowRenderer.sprite = Resources.Load<Sprite>("Sprites/halo");
+        Color glowColor = (Owner != null) ? Owner.Color : Color.white;
+        glowColor.a = 1f;
+        glowRenderer.color = glowColor;
+        glowRenderer.sortingOrder = 3;
 
         SetColorBasedOnOwner();
 
@@ -69,7 +81,7 @@ public class Star : MonoBehaviour
 
     void HandleFiveSecondInterval()
     {
-        if (owner != "Neutral")
+        if (Owner != null && !isNeutral)
         {
             int unitsPerInterval = 0;
             switch (starType)
@@ -78,25 +90,32 @@ public class Star : MonoBehaviour
                     unitsPerInterval = 15;
                     break;
                 case StarType.Normal:
+                case StarType.Conquered:
                     unitsPerInterval = 2;
                     break;
             }
-
             if (unitsPerInterval > 0)
             {
                 units += unitsPerInterval;
-                lastGeneratedTime = GameTimer.Instance.currentTime;
+                if (isVisible)
+                {
+                    UpdateText();
+                    // Afficher le texte flottant pour la génération d'unités
+                    if (FloatingTextManager.Instance != null)
+                    {
+                        FloatingTextManager.Instance.ShowUnitGeneration(this, unitsPerInterval);
+                    }
+                }
             }
         }
     }
 
     void Update()
     {
-        // Ne plus appeler UpdateText() ici car SetVisibility() gère déjà l'affichage
-        // UpdateText() est appelé uniquement quand nécessaire dans SetVisibility()
+        // Supprimer la coroutine GenerateUnits et tout appel à celle-ci
     }
 
-    private void UpdateText()
+    public void UpdateText()
     {
         if (!isVisible)
         {
@@ -142,6 +161,16 @@ public class Star : MonoBehaviour
         {
             textMesh.gameObject.SetActive(true);
         }
+        // Gérer le glow
+        Transform glowEffect = transform.Find("StarGlow");
+        if (glowEffect != null)
+        {
+            SpriteRenderer glowRenderer = glowEffect.GetComponent<SpriteRenderer>();
+            if (glowRenderer != null)
+            {
+                glowRenderer.enabled = visible;
+            }
+        }
         if (isVisible)
         {
             SetColorBasedOnOwner();
@@ -172,6 +201,7 @@ public class Star : MonoBehaviour
             if (hoverEffect != null) hoverEffect.SetActive(false);
             if (selectedEffect != null) selectedEffect.SetActive(false);
         }
+        if (isVisible) UpdateText();
     }
 
     // Ajout : méthode utilitaire pour savoir si la planète est visible (champ de vision)
@@ -183,6 +213,7 @@ public class Star : MonoBehaviour
         {
             units = attackingUnits - units;
             isNeutral = false;
+            if (isVisible) UpdateText();
 
             if (Owner != null)
             {
@@ -197,12 +228,16 @@ public class Star : MonoBehaviour
             {
                 starType = StarType.Conquered;
             }
+            else
+            {
+                starType = StarType.Normal;
+            }
+            // Synchroniser la génération d'unités avec le timer global (plus besoin de coroutine)
             // Si la planète est visible, animation normale, sinon reste grise
             if (isVisible)
             {
                 SetColorBasedOnOwner();
                 PlayExplosion();
-                StartCoroutine(GenerateUnits(2, 5));
                 StartCoroutine(ExplosionAnimation());
             }
             else
@@ -231,6 +266,7 @@ public class Star : MonoBehaviour
         else
         {
             units -= attackingUnits;
+            if (isVisible) UpdateText();
         }
     }
     public void SetColorBasedOnOwner()
@@ -238,29 +274,32 @@ public class Star : MonoBehaviour
         if (Owner != null)
         {
             GetComponent<SpriteRenderer>().color = Owner.Color;
+            // Mettre à jour la couleur du halo
+            Transform glowEffect = transform.Find("StarGlow");
+            if (glowEffect != null)
+            {
+                SpriteRenderer glowRenderer = glowEffect.GetComponent<SpriteRenderer>();
+                if (glowRenderer != null)
+                {
+                    glowRenderer.color = Owner.Color;
+                }
+            }
         }
         else
         {
             GetComponent<SpriteRenderer>().color = neutralColor;
-        }
-    }
-
-    public IEnumerator GenerateUnits(int unitsPerInterval = 1, int interval = 1)
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(interval);
-            if (owner != "Neutral")
+            // Mettre à jour la couleur du halo
+            Transform glowEffect = transform.Find("StarGlow");
+            if (glowEffect != null)
             {
-                int currentTime = GameTimer.Instance.currentTime;
-                int elapsedIntervals = (currentTime - lastGeneratedTime) / interval;
-                if (elapsedIntervals > 0)
+                SpriteRenderer glowRenderer = glowEffect.GetComponent<SpriteRenderer>();
+                if (glowRenderer != null)
                 {
-                    units += unitsPerInterval * elapsedIntervals;
-                    lastGeneratedTime += elapsedIntervals * interval;
+                    glowRenderer.color = Color.white;
                 }
             }
         }
+        if (isVisible) UpdateText();
     }
 
     private IEnumerator ExplosionAnimation()

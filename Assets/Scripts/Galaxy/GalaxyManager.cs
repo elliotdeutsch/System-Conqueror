@@ -82,11 +82,18 @@ public class GalaxyManager : MonoBehaviour
         GenerateGalaxy();
 
         startingStarAssignment = GetComponent<StartingStarAssignment>(); // Initialiser StartingStarAssignment
-        startingStarAssignment.Initialize(stars); // Passer la liste des étoiles
-        startingStarAssignment.AssignStartingStars(players); // Assigner les étoiles de départ
+        // On initialise juste la liste ici, la distribution se fera après le graphe
+        startingStarAssignment.Initialize(stars);
 
         // Centrer la caméra sur la planète de départ du joueur contrôlé
         CenterCameraOnPlayerStartingStar();
+
+        // Mettre à jour les limites de la caméra
+        CameraController cameraController = FindObjectOfType<CameraController>();
+        if (cameraController != null)
+        {
+            cameraController.UpdatePanLimits();
+        }
 
         // Assurez-vous que toutes les étoiles sont ajoutées au graphe avant de connecter
         foreach (var star in stars)
@@ -108,6 +115,10 @@ public class GalaxyManager : MonoBehaviour
         pathFinding = GetComponent<PathFinding>(); // Initialiser PathFinding
         pathFinding.Initialize(starGraph); // Passer le graphe des étoiles
 
+        // Maintenant que le graphe est prêt, on peut assigner les planètes de départ
+        startingStarAssignment.Initialize(stars, starGraphManager);
+        startingStarAssignment.AssignStartingStars(players);
+
         // Si un joueur est contrôlé, le lier au PlayerController
         if (controlledPlayer != null)
         {
@@ -124,6 +135,11 @@ public class GalaxyManager : MonoBehaviour
 
     void GenerateGalaxy()
     {
+        // Calcul automatique de la taille de la carte
+        float mapSize = Mathf.Ceil(Mathf.Sqrt(numberOfStars) * 12f);
+        mapWidth = mapSize;
+        mapHeight = mapSize;
+
         starNameGenerator = GetComponent<StarNameGenerator>(); // Ajout de cette ligne
         for (int i = 0; i < numberOfStars; i++)
         {

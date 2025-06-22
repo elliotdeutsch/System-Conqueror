@@ -25,11 +25,64 @@ public class CameraController : MonoBehaviour
     private Vector3 dragOrigin;
     private bool isDragging = false;
 
+    void Awake()
+    {
+        // Set camera background to solid black
+        Camera mainCamera = Camera.main;
+        if (mainCamera != null)
+        {
+            mainCamera.clearFlags = CameraClearFlags.SolidColor;
+            mainCamera.backgroundColor = Color.black;
+        }
+    }
+
+    void Start()
+    {
+        // Centrer la caméra sur le joueur au démarrage
+        CenterOnPlayer();
+    }
+
     void Update()
     {
         // Gérer le mouvement et le zoom de la caméra
         HandleMovement();
         HandleZoom();
+        HandleRefocus();
+    }
+
+    void HandleRefocus()
+    {
+        // Touche R pour refocus sur le joueur
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            CenterOnPlayer();
+        }
+    }
+
+    public void UpdatePanLimits()
+    {
+        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        if (galaxyManager != null)
+        {
+            panLimit = new Vector2(galaxyManager.mapWidth / 2, galaxyManager.mapHeight / 2);
+        }
+    }
+
+    public void CenterOnPlayer()
+    {
+        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        if (galaxyManager != null && galaxyManager.controlledPlayer != null && galaxyManager.controlledPlayer.Stars.Count > 0)
+        {
+            // Centrer sur la première planète du joueur (généralement la capitale)
+            Star playerStar = galaxyManager.controlledPlayer.Stars[0];
+            if (playerStar != null)
+            {
+                Vector3 targetPosition = playerStar.transform.position;
+                targetPosition.z = transform.position.z; // Garder la même profondeur
+                transform.position = targetPosition;
+                Debug.Log($"Caméra centrée sur {playerStar.starName}");
+            }
+        }
     }
 
     void HandleMovement()

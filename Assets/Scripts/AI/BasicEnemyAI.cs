@@ -23,6 +23,10 @@ public class BasicEnemyAI : MonoBehaviour
     private StarGraphManager starGraphManager;
     private PathFinding pathFinding;
 
+    // Cooldown de 3 secondes entre les attaques pour chaque IA
+    private Dictionary<Player, int> lastAttackTime = new Dictionary<Player, int>();
+    private bool gameStarted = false;
+
     void Start()
     {
         // Initialisation des références aux gestionnaires de galaxie et d'unités
@@ -30,31 +34,60 @@ public class BasicEnemyAI : MonoBehaviour
         unitManager = FindObjectOfType<UnitManager>();
         starGraphManager = FindObjectOfType<StarGraphManager>();
         pathFinding = FindObjectOfType<PathFinding>();
-        // Démarrage de la coroutine de vérification des attaques
-        StartCoroutine(CheckForAttacks());
+
+        // S'abonner au timer global pour les vérifications
+        if (GameTimer.Instance != null)
+        {
+            GameTimer.Instance.OnFiveSecondInterval += OnFiveSecondInterval;
+        }
     }
 
-    IEnumerator CheckForAttacks()
+    void OnDestroy()
     {
-        // Boucle infinie pour vérifier périodiquement les conditions d'attaque
-        while (true)
+        if (GameTimer.Instance != null)
         {
-            // Pause pour l'intervalle de vérification
-            yield return new WaitForSeconds(checkInterval);
-            // Parcours des étoiles pour les planètes ennemies
-            foreach (Star star in galaxyManager.stars)
+            GameTimer.Instance.OnFiveSecondInterval -= OnFiveSecondInterval;
+        }
+    }
+
+    // Méthode appelée toutes les 5 secondes par le timer global
+    void OnFiveSecondInterval()
+    {
+        if (!gameStarted)
+        {
+            // Attendre 5 secondes de jeu avant de commencer
+            if (GameTimer.Instance.currentTime >= 5)
             {
-                if (star.Owner != null && star.Owner.IsAI)
-                {
-                    // Tentative d'attaque si la planète appartient à l'IA
-                    TryAttack(star);
-                }
+                gameStarted = true;
+            }
+            else
+            {
+                return; // Ne pas attaquer avant 5s
+            }
+        }
+
+        // Vérifier les attaques pour toutes les IA
+        foreach (Star star in galaxyManager.stars)
+        {
+            if (star.Owner != null && star.Owner.IsAI)
+            {
+                TryAttack(star);
             }
         }
     }
 
     void TryAttack(Star enemyStar)
     {
+        // Vérifier le cooldown de 3 secondes pour cette IA
+        if (lastAttackTime.ContainsKey(enemyStar.Owner))
+        {
+            int timeSinceLastAttack = GameTimer.Instance.currentTime - lastAttackTime[enemyStar.Owner];
+            if (timeSinceLastAttack < 3)
+            {
+                return; // Cooldown actif
+            }
+        }
+
         List<Star> neighboringStars = starGraphManager.GetNeighbors(enemyStar);
         Star targetStar = null;
         int minUnitsRequired = int.MaxValue;
@@ -64,15 +97,25 @@ public class BasicEnemyAI : MonoBehaviour
         {
             if (neighbor.Owner == null) // Étoile neutre
             {
-                int requiredUnits = Mathf.CeilToInt(neighbor.units * 1.2f) + 10; // 20% + 10 unités de plus que les unités de la planète neutre
+                // Calculer le temps de trajet estimé (1 seconde par segment)
+                int pathLength = 1; // Distance minimale pour un voisin
+                int estimatedTravelTime = pathLength;
+
+                // Calculer les unités qui seront générées pendant le trajet
+                int unitsGeneratedDuringTravel = estimatedTravelTime * 2; // 2 unités par seconde
+
+                // Calculer les unités nécessaires avec bonus pour la génération pendant le trajet
+                int baseRequiredUnits = Mathf.CeilToInt(neighbor.units * 1.3f) + 12;
+                int totalRequiredUnits = baseRequiredUnits + unitsGeneratedDuringTravel;
+
                 int availableUnits = enemyStar.units;
 
                 // Vérifier que l'IA garde au moins 10 unités après l'attaque et qu'elle a les unités nécessaires
-                if (availableUnits >= requiredUnits + 10)
+                if (availableUnits >= totalRequiredUnits + 10)
                 {
-                    if (requiredUnits > 0 && requiredUnits < minUnitsRequired)
+                    if (totalRequiredUnits > 0 && totalRequiredUnits < minUnitsRequired)
                     {
-                        minUnitsRequired = requiredUnits;
+                        minUnitsRequired = totalRequiredUnits;
                         targetStar = neighbor;
                     }
                 }
@@ -86,15 +129,25 @@ public class BasicEnemyAI : MonoBehaviour
             {
                 if (neighbor.Owner != null && neighbor.Owner != enemyStar.Owner)
                 {
-                    int unitsToSend = Mathf.CeilToInt(neighbor.units * (1 + attackThreshold));
+                    // Calculer le temps de trajet estimé (1 seconde par segment)
+                    int pathLength = 1; // Distance minimale pour un voisin
+                    int estimatedTravelTime = pathLength;
+
+                    // Calculer les unités qui seront générées pendant le trajet
+                    int unitsGeneratedDuringTravel = estimatedTravelTime * 2; // 2 unités par seconde
+
+                    // Calculer les unités nécessaires avec bonus pour la génération pendant le trajet
+                    int baseUnitsToSend = Mathf.CeilToInt(neighbor.units * (1 + attackThreshold + 0.05f));
+                    int totalUnitsToSend = baseUnitsToSend + unitsGeneratedDuringTravel;
+
                     int availableUnits = enemyStar.units - 10;
 
                     // Vérifier que l'IA garde au moins 10 unités après l'attaque et qu'elle a les unités nécessaires
-                    if (unitsToSend > 0 && availableUnits >= unitsToSend)
+                    if (totalUnitsToSend > 0 && availableUnits >= totalUnitsToSend)
                     {
-                        if (unitsToSend < minUnitsRequired)
+                        if (totalUnitsToSend < minUnitsRequired)
                         {
-                            minUnitsRequired = unitsToSend;
+                            minUnitsRequired = totalUnitsToSend;
                             targetStar = neighbor;
                         }
                     }
@@ -105,6 +158,9 @@ public class BasicEnemyAI : MonoBehaviour
         // Si une cible est trouvée, envoyer les unités
         if (targetStar != null && enemyStar.units >= minUnitsRequired + 10)
         {
+            // Enregistrer le temps de cette attaque
+            lastAttackTime[enemyStar.Owner] = GameTimer.Instance.currentTime;
+
             List<Star> path = pathFinding.FindPath(enemyStar, targetStar);
             if (path.Count > 0)
             {
@@ -113,5 +169,4 @@ public class BasicEnemyAI : MonoBehaviour
             }
         }
     }
-
 }
