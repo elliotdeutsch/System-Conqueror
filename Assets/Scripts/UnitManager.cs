@@ -22,10 +22,10 @@ public class UnitManager : MonoBehaviour
 
     void Start()
     {
-        pathFinding = FindObjectOfType<PathFinding>();
+        pathFinding = FindFirstObjectByType<PathFinding>();
         if (playerController == null)
         {
-            playerController = FindObjectOfType<PlayerController>();
+            playerController = FindFirstObjectByType<PlayerController>();
         }
 
         if (unitPrefab == null)
@@ -40,7 +40,7 @@ public class UnitManager : MonoBehaviour
 
         if (galaxyManager == null)
         {
-            galaxyManager = FindObjectOfType<GalaxyManager>();
+            galaxyManager = FindFirstObjectByType<GalaxyManager>();
         }
     }
 
@@ -160,7 +160,7 @@ public class UnitManager : MonoBehaviour
         unitScript.Initialize(fromStar, path[path.Count - 1], unitsToSend, fromStar.Owner);
 
         // Créer un effet de glow alternatif avec un sprite enfant
-        CreateNeonGlow(unitInstance, fromStar.Owner);
+        CreateNeonGlow(unitInstance, fromStar);
 
         for (int i = 1; i < path.Count; i++)
         {
@@ -237,7 +237,7 @@ public class UnitManager : MonoBehaviour
             {
                 if (unitsToSend > currentStar.units)
                 {
-                    currentStar.Conquer(unitScript.owner, unitsToSend);
+                    currentStar.Conquer(fromStar, unitsToSend);
                     ObjectPooler.Instance.ReturnToPool("Unit", unitInstance);
                     yield break;
                 }
@@ -270,7 +270,7 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    void CreateNeonGlow(GameObject unitInstance, Player owner)
+    void CreateNeonGlow(GameObject unitInstance, Star star)
     {
         // Crée un GameObject enfant pour le halo
         GameObject glow = new GameObject("NeonGlow");
@@ -291,7 +291,7 @@ public class UnitManager : MonoBehaviour
         }
 
         // Couleur du halo = couleur du propriétaire, très saturée
-        Color glowColor = owner != null ? owner.Color : Color.white;
+        Color glowColor = (star.Owner != null) ? star.Owner.Color : Color.white;
         glowColor.a = 1f; // Transparence
         glowRenderer.color = glowColor;
 

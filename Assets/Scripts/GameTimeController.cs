@@ -53,6 +53,8 @@ public class GameTimeController : MonoBehaviour
 
     void HandleKeyboardInput()
     {
+        if (DeveloperConsole.IsConsoleOpen)
+            return;
         // Espace pour play/pause
         if (Input.GetKeyDown(KeyCode.Space))
         {

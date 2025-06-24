@@ -12,7 +12,7 @@ public class StartingStarAssignment : MonoBehaviour
         if (graphManager != null)
             starGraphManager = graphManager;
         else
-            starGraphManager = FindObjectOfType<StarGraphManager>();
+            starGraphManager = FindFirstObjectByType<StarGraphManager>();
     }
 
     public void AssignStartingStars(List<Player> players)

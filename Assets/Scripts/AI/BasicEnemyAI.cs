@@ -30,10 +30,10 @@ public class BasicEnemyAI : MonoBehaviour
     void Start()
     {
         // Initialisation des références aux gestionnaires de galaxie et d'unités
-        galaxyManager = FindObjectOfType<GalaxyManager>();
-        unitManager = FindObjectOfType<UnitManager>();
-        starGraphManager = FindObjectOfType<StarGraphManager>();
-        pathFinding = FindObjectOfType<PathFinding>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
+        unitManager = FindFirstObjectByType<UnitManager>();
+        starGraphManager = FindFirstObjectByType<StarGraphManager>();
+        pathFinding = FindFirstObjectByType<PathFinding>();
 
         // S'abonner au timer global pour les vérifications
         if (GameTimer.Instance != null)

@@ -11,7 +11,7 @@ public class UnitSendSettingsUI : MonoBehaviour
     {
         if (playerController == null)
         {
-            playerController = FindObjectOfType<PlayerController>();
+            playerController = FindFirstObjectByType<PlayerController>();
         }
 
         if (keyAInput != null)

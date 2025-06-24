@@ -23,12 +23,12 @@ public class StarConnectionHandler : MonoBehaviour
         foreach (Star starA in stars)
         {
             int numConnections = Random.Range(1, 6);
-            StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+            StarGraphManager starGraphManager = FindFirstObjectByType<StarGraphManager>();
 
             List<Star> closestStars = starGraphManager.GetClosestStars(starA, numConnections);
             foreach (Star starB in closestStars)
             {
-                LineManager lineManager = FindObjectOfType<LineManager>();
+                LineManager lineManager = FindFirstObjectByType<LineManager>();
                 lineManager.CreateLine(starA, starB);
 
                 if (!starGraph[starA].Contains(starB)) // Éviter les doublons
@@ -46,7 +46,7 @@ public class StarConnectionHandler : MonoBehaviour
 
     public void EnsureFullConnectivity()
     {
-        StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+        StarGraphManager starGraphManager = FindFirstObjectByType<StarGraphManager>();
 
         List<List<Star>> clusters = starGraphManager.GetClusters();
         while (clusters.Count > 1)
@@ -73,7 +73,7 @@ public class StarConnectionHandler : MonoBehaviour
 
             if (closestA != null && closestB != null)
             {
-                LineManager lineManager = FindObjectOfType<LineManager>();
+                LineManager lineManager = FindFirstObjectByType<LineManager>();
                 lineManager.CreateLine(closestA, closestB);
                 starGraph[closestA].Add(closestB);
                 starGraph[closestB].Add(closestA);

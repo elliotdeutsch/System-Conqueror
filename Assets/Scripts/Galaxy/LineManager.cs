@@ -35,7 +35,7 @@ public class LineManager : MonoBehaviour
         visibility.starB = starB;
 
         // Mettre à jour immédiatement la visibilité selon l'état actuel du fog of war
-        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        GalaxyManager galaxyManager = FindFirstObjectByType<GalaxyManager>();
         if (galaxyManager != null)
         {
             // Forcer la mise à jour de toutes les lignes
@@ -68,7 +68,7 @@ public class LineManager : MonoBehaviour
 
     public void UpdateAllLines(Star star)
     {
-        StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+        StarGraphManager starGraphManager = FindFirstObjectByType<StarGraphManager>();
         List<Star> neighbors = starGraphManager.GetNeighbors(star);
         foreach (Star neighbor in neighbors)
         {
@@ -86,7 +86,7 @@ public class LineManager : MonoBehaviour
 
     public void ForceUpdateAllLines()
     {
-        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
+        GalaxyManager galaxyManager = FindFirstObjectByType<GalaxyManager>();
         if (galaxyManager != null)
         {
             HashSet<Star> visibleStars = new HashSet<Star>();
@@ -100,7 +100,7 @@ public class LineManager : MonoBehaviour
                 {
                     visibleStars.Add(owned);
                     // Utiliser StarGraphManager pour obtenir les voisins
-                    StarGraphManager starGraphManager = FindObjectOfType<StarGraphManager>();
+                    StarGraphManager starGraphManager = FindFirstObjectByType<StarGraphManager>();
                     if (starGraphManager != null)
                     {
                         List<Star> neighbors = starGraphManager.GetNeighbors(owned);

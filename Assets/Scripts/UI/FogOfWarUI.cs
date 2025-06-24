@@ -12,8 +12,8 @@ public class FogOfWarUI : MonoBehaviour
 
     void Start()
     {
-        galaxyManager = FindObjectOfType<GalaxyManager>();
-        playerController = FindObjectOfType<PlayerController>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
+        playerController = FindFirstObjectByType<PlayerController>();
 
         if (instructionsText != null)
         {

@@ -42,8 +42,8 @@ public class Star : MonoBehaviour
 
     void Start()
     {
-        lineManager = FindObjectOfType<LineManager>();
-        galaxyManager = FindObjectOfType<GalaxyManager>();
+        lineManager = FindFirstObjectByType<LineManager>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
 
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
@@ -227,7 +227,7 @@ public class Star : MonoBehaviour
     // Ajout : méthode utilitaire pour savoir si la planète est visible (champ de vision)
     public bool IsInVision() => isVisible;
 
-    public void Conquer(Player attackingOwner, int attackingUnits)
+    public void Conquer(Star fromStar, int attackingUnits)
     {
         Player oldOwner = Owner;
         if (attackingUnits >= units)
@@ -245,7 +245,7 @@ public class Star : MonoBehaviour
                     SpatialGridManager.Instance.RemoveStar(Owner, this);
                 }
             }
-            Owner = attackingOwner;
+            Owner = fromStar.Owner;
             if (Owner != null)
             {
                 Owner.Stars.Add(this);
@@ -279,13 +279,13 @@ public class Star : MonoBehaviour
             if (lineManager != null)
             {
                 lineManager.UpdateAllLines(this);
-                // lineManager.UpdateAllLines(fromStar); // plus besoin
+                lineManager.UpdateAllLines(fromStar);
             }
             if (galaxyManager != null)
             {
                 galaxyManager.UpdatePlayerListUI();
                 galaxyManager.UpdateFogOfWar();
-                PlayerController playerController = FindObjectOfType<PlayerController>();
+                PlayerController playerController = FindFirstObjectByType<PlayerController>();
                 if (playerController != null)
                 {
                     playerController.UpdateFogOfWarDisplay();

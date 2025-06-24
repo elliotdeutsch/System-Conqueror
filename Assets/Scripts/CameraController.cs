@@ -28,7 +28,7 @@ public class CameraController : MonoBehaviour
 
     void Awake()
     {
-        galaxyManager = FindObjectOfType<GalaxyManager>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
         // Set camera background to solid black
         Camera mainCamera = Camera.main;
         if (mainCamera != null)
@@ -46,6 +46,8 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
+        if (DeveloperConsole.IsConsoleOpen)
+            return;
         // Gérer le mouvement et le zoom de la caméra
         HandleMovement();
         HandleZoom();

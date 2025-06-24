@@ -14,7 +14,7 @@ public class GameSetupUI : MonoBehaviour
     {
         if (galaxyManager == null)
         {
-            galaxyManager = FindObjectOfType<GalaxyManager>();
+            galaxyManager = FindFirstObjectByType<GalaxyManager>();
         }
 
         if (setupPanel != null)
@@ -81,7 +81,7 @@ public class GameSetupUI : MonoBehaviour
         }
 
         // Centrer la caméra sur le joueur après l'initialisation
-        CameraController cameraController = FindObjectOfType<CameraController>();
+        CameraController cameraController = FindFirstObjectByType<CameraController>();
         if (cameraController != null)
         {
             cameraController.CenterOnPlayer();

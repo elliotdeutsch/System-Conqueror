@@ -97,7 +97,7 @@ public class GalaxyManager : MonoBehaviour
         CenterCameraOnPlayerStartingStar();
 
         // Mettre à jour les limites de la caméra
-        CameraController cameraController = FindObjectOfType<CameraController>();
+        CameraController cameraController = FindFirstObjectByType<CameraController>();
         if (cameraController != null)
         {
             cameraController.UpdatePanLimits();
@@ -130,7 +130,7 @@ public class GalaxyManager : MonoBehaviour
         // Si un joueur est contrôlé, le lier au PlayerController
         if (controlledPlayer != null)
         {
-            PlayerController playerController = FindObjectOfType<PlayerController>();
+            PlayerController playerController = FindFirstObjectByType<PlayerController>();
             if (playerController != null)
             {
                 playerController.player = controlledPlayer;
@@ -277,7 +277,7 @@ public class GalaxyManager : MonoBehaviour
             s.SetVisibility(visibleStars.Contains(s));
         }
 
-        LineManager lineManager = FindObjectOfType<LineManager>();
+        LineManager lineManager = FindFirstObjectByType<LineManager>();
         if (lineManager != null)
         {
             lineManager.ForceUpdateAllLines();

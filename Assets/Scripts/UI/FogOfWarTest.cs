@@ -6,7 +6,7 @@ public class FogOfWarTest : MonoBehaviour
 
     void Start()
     {
-        galaxyManager = FindObjectOfType<GalaxyManager>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
         InvokeRepeating("TestFogOfWar", 5f, 10f); // Test toutes les 10 secondes après 5 secondes
     }
 

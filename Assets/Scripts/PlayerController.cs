@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
 
     public UIManager uiManager;
     private List<Star> selectedStars = new List<Star>();
+    public List<Star> SelectedStars => selectedStars;
     private Star hoveredStar;
     // Valeurs par défaut pour l'envoi rapide avec les touches A et E
     [SerializeField] private int unitsForKeyA = 10;
@@ -50,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        galaxyManager = FindObjectOfType<GalaxyManager>();
+        galaxyManager = FindFirstObjectByType<GalaxyManager>();
         if (uiManager == null)
         {
             Debug.LogError("UIManager is not assigned in the PlayerController.");
@@ -84,6 +85,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (DeveloperConsole.IsConsoleOpen)
+            return;
         HandleMouseClick();
         HandleUnitSend();
         CheckHoveredStar();
@@ -148,11 +151,11 @@ public class PlayerController : MonoBehaviour
 
             if (unitsToSendFromStar > 0)
             {
-                PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                PathFinding pathFinding = FindFirstObjectByType<PathFinding>();
                 List<Star> path = pathFinding.FindPath(selectedStar, hoveredStar);
                 if (path.Count > 0)
                 {
-                    StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
+                    StartCoroutine(FindFirstObjectByType<UnitManager>().MoveUnits(selectedStar, path, unitsToSendFromStar));
                 }
                 else
                 {
@@ -276,7 +279,7 @@ public class PlayerController : MonoBehaviour
                 UpdateFogOfWarDisplay();
 
                 // Forcer la mise à jour de toutes les lignes
-                LineManager lineManager = FindObjectOfType<LineManager>();
+                LineManager lineManager = FindFirstObjectByType<LineManager>();
                 if (lineManager != null)
                 {
                     lineManager.ForceUpdateAllLines();
@@ -296,7 +299,7 @@ public class PlayerController : MonoBehaviour
                     foreach (var selected in selectedStars)
                     {
                         if (selected == hoveredStar) continue;
-                        PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                        PathFinding pathFinding = FindFirstObjectByType<PathFinding>();
                         List<Star> path = pathFinding.FindPath(selected, hoveredStar);
                         if (path.Count > 1)
                         {
@@ -392,9 +395,9 @@ public class PlayerController : MonoBehaviour
                     int unitsToSend = source.units;
                     if (unitsToSend > 0)
                     {
-                        PathFinding pathFinding = FindObjectOfType<PathFinding>();
+                        PathFinding pathFinding = FindFirstObjectByType<PathFinding>();
                         List<Star> path = new List<Star> { source, target };
-                        StartCoroutine(FindObjectOfType<UnitManager>().MoveUnits(source, path, unitsToSend));
+                        StartCoroutine(FindFirstObjectByType<UnitManager>().MoveUnits(source, path, unitsToSend));
                     }
                 }
             }
