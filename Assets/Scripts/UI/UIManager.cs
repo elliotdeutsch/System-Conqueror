@@ -18,6 +18,9 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI timerText;
 
     private bool timerStarted = false;
+    private Star lastDisplayedStar;
+    private int lastDisplayedUnits = -1;
+    private int lastDisplayedTime = -1;
 
     void Start()
     {
@@ -37,6 +40,9 @@ public class UIManager : MonoBehaviour
         {
             OnPlayPauseChanged(true);
         }
+
+        // Start a coroutine to handle UI updates efficiently.
+        StartCoroutine(UpdateUI());
     }
 
     void OnEnable()
@@ -57,26 +63,47 @@ public class UIManager : MonoBehaviour
         if (isPlaying && !timerStarted)
         {
             timerStarted = true;
-            StartCoroutine(UpdateTimer());
+            // The UpdateUI coroutine now handles the timer display.
         }
     }
 
-    public void UpdateSystemInfo(Star star)
+    public void SetDisplayedStar(Star newStar)
     {
-        systemNameText.text = "System: " + star.starName;
-        unitsText.text = "Units: " + star.units;
+        lastDisplayedStar = newStar;
+        // Force an immediate update for the new star system name
+        if (newStar != null)
+        {
+            systemNameText.text = "System: " + newStar.starName;
+            unitsText.text = "Units: " + newStar.units;
+            lastDisplayedUnits = newStar.units;
+        }
+        else
+        {
+            systemNameText.text = "System: N/A";
+            unitsText.text = "Units: N/A";
+            lastDisplayedUnits = -1;
+        }
     }
 
-    IEnumerator UpdateTimer()
+    private IEnumerator UpdateUI()
     {
         while (true)
         {
-            // Mettre à jour le texte du timer
-            if (GameTimer.Instance != null)
+            // Update star info only if values changed
+            if (lastDisplayedStar != null && lastDisplayedStar.units != lastDisplayedUnits)
             {
-                timerText.text = "Time: " + GameTimer.Instance.currentTime + "s";
+                unitsText.text = "Units: " + lastDisplayedStar.units;
+                lastDisplayedUnits = lastDisplayedStar.units;
             }
-            yield return new WaitForSeconds(1);
+
+            // Update timer only if value changed
+            if (timerStarted && GameTimer.Instance != null && GameTimer.Instance.currentTime != lastDisplayedTime)
+            {
+                lastDisplayedTime = GameTimer.Instance.currentTime;
+                timerText.text = "Time: " + lastDisplayedTime + "s";
+            }
+
+            yield return new WaitForSeconds(0.1f); // Check for updates 10 times per second
         }
     }
 }

@@ -24,9 +24,11 @@ public class CameraController : MonoBehaviour
     // Origine du clic pour le déplacement de la caméra
     private Vector3 dragOrigin;
     private bool isDragging = false;
+    private GalaxyManager galaxyManager;
 
     void Awake()
     {
+        galaxyManager = FindObjectOfType<GalaxyManager>();
         // Set camera background to solid black
         Camera mainCamera = Camera.main;
         if (mainCamera != null)
@@ -61,7 +63,6 @@ public class CameraController : MonoBehaviour
 
     public void UpdatePanLimits()
     {
-        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
         if (galaxyManager != null)
         {
             panLimit = new Vector2(galaxyManager.mapWidth / 2, galaxyManager.mapHeight / 2);
@@ -70,7 +71,6 @@ public class CameraController : MonoBehaviour
 
     public void CenterOnPlayer()
     {
-        GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
         if (galaxyManager != null && galaxyManager.controlledPlayer != null && galaxyManager.controlledPlayer.Stars.Count > 0)
         {
             // Centrer sur la première planète du joueur (généralement la capitale)

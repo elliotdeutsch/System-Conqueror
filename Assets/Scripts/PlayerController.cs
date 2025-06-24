@@ -222,7 +222,7 @@ public class PlayerController : MonoBehaviour
 
         if (uiManager != null)
         {
-            uiManager.UpdateSystemInfo(star);
+            uiManager.SetDisplayedStar(star);
         }
         else
         {
@@ -250,12 +250,16 @@ public class PlayerController : MonoBehaviour
 
     void ClearSelection()
     {
-        foreach (Star star in selectedStars)
+        foreach (var star in selectedStars)
         {
             star.SetSelected(false);
-            star.selectedEffect.SetActive(false); // Désactiver l'effet de sélection
+            star.selectedEffect.SetActive(false); // Enlever l'effet de sélection
         }
         selectedStars.Clear();
+        if (uiManager != null)
+        {
+            uiManager.SetDisplayedStar(null);
+        }
     }
 
     void HandleFogOfWarToggle()

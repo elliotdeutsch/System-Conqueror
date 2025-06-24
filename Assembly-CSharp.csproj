@@ -75,6 +75,7 @@
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_PhoneNumberValidator.cs" />
     <Compile Include="Assets\Scripts\GameTimeController.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\VertexShakeB.cs" />
+    <Compile Include="Assets\Scripts\Pooler\ObjectPooler.cs" />
     <Compile Include="Assets\Scripts\Galaxy\StartingStarAssignment.cs" />
     <Compile Include="Assets\Scripts\Galaxy\Star.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\WarpTextExample.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Assets\Scripts\Galaxy\StarConnectionHandler.cs" />
     <Compile Include="Assets\Scripts\Galaxy\StarGraphManager.cs" />
     <Compile Include="Assets\Scripts\Galaxy\StarNameGenerator.cs" />
+    <Compile Include="Assets\Scripts\Galaxy\SpatialGridManager.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_TextEventHandler.cs" />
     <Compile Include="Assets\Scripts\UnitManager.cs" />
     <Compile Include="Assets\Imports\TextMesh Pro\Examples &amp; Extras\Scripts\TMP_DigitValidator.cs" />

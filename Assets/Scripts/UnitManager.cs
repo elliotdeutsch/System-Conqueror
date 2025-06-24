@@ -18,8 +18,11 @@ public class UnitManager : MonoBehaviour
     public GalaxyManager galaxyManager;
     public float unitSpeed = 2.0f;
 
+    private PathFinding pathFinding;
+
     void Start()
     {
+        pathFinding = FindObjectOfType<PathFinding>();
         if (playerController == null)
         {
             playerController = FindObjectOfType<PlayerController>();
@@ -82,7 +85,13 @@ public class UnitManager : MonoBehaviour
         fromStar.units -= unitsToSend;
         if (fromStar.isVisible) fromStar.UpdateText();
 
-        GameObject unitInstance = Instantiate(unitPrefab, fromStar.transform.position, Quaternion.identity);
+        GameObject unitInstance = ObjectPooler.Instance.GetFromPool("Unit", fromStar.transform.position, Quaternion.identity);
+        if (unitInstance == null)
+        {
+            Debug.LogError("Could not get a unit from the pool. Check the pooler configuration.");
+            yield break;
+        }
+
         Unit unitScript = unitInstance.GetComponent<Unit>();
         if (unitScript == null)
         {
@@ -148,7 +157,7 @@ public class UnitManager : MonoBehaviour
         rectTransform.sizeDelta = new Vector2(1, 1);
 
         unitScript.textMesh = textMesh; // Associez le composant texte à l'unité
-        unitScript.Initialize(fromStar, path[path.Count - 1], unitsToSend);
+        unitScript.Initialize(fromStar, path[path.Count - 1], unitsToSend, fromStar.Owner);
 
         // Créer un effet de glow alternatif avec un sprite enfant
         CreateNeonGlow(unitInstance, fromStar.Owner);
@@ -168,12 +177,21 @@ public class UnitManager : MonoBehaviour
                 {
                     // Vérifier si la position actuelle de l'unité est dans le champ de vision
                     bool inVision = false;
-                    foreach (Star owned in galaxyManager.controlledPlayer.Stars)
+                    if (SpatialGridManager.Instance != null)
                     {
-                        if (Vector3.Distance(unitInstance.transform.position, owned.transform.position) < 10f) // Distance de vision
+                        var nearbyStars = SpatialGridManager.Instance.GetStarsInRadius(galaxyManager.controlledPlayer, unitInstance.transform.position, 10f);
+                        inVision = nearbyStars.Count > 0;
+                    }
+                    else
+                    {
+                        // Fallback: ancienne méthode si la grille n'est pas dispo
+                        foreach (Star owned in galaxyManager.controlledPlayer.Stars)
                         {
-                            inVision = true;
-                            break;
+                            if (Vector3.Distance(unitInstance.transform.position, owned.transform.position) < 10f)
+                            {
+                                inVision = true;
+                                break;
+                            }
                         }
                     }
                     shouldBeVisible = inVision;
@@ -212,34 +230,38 @@ public class UnitManager : MonoBehaviour
             {
                 currentStar.units += unitsToSend;
                 if (currentStar.isVisible) currentStar.UpdateText();
-                Destroy(unitInstance);
+                ObjectPooler.Instance.ReturnToPool("Unit", unitInstance);
                 yield break;
             }
-            else if (currentStar.Owner != fromStar.Owner)
+            else if (currentStar.Owner != unitScript.owner)
             {
                 if (unitsToSend > currentStar.units)
                 {
-                    currentStar.Conquer(fromStar, unitsToSend);
-                    Destroy(unitInstance);
+                    currentStar.Conquer(unitScript.owner, unitsToSend);
+                    ObjectPooler.Instance.ReturnToPool("Unit", unitInstance);
                     yield break;
                 }
                 else
                 {
                     currentStar.units -= unitsToSend;
                     if (currentStar.isVisible) currentStar.UpdateText();
-                    Destroy(unitInstance);
+                    ObjectPooler.Instance.ReturnToPool("Unit", unitInstance);
                     yield break;
                 }
             }
         }
 
-        Destroy(unitInstance);
+        ObjectPooler.Instance.ReturnToPool("Unit", unitInstance);
     }
 
 
     public void SendUnits(Star fromStar, Star toStar, int unitsToSend)
     {
-        PathFinding pathFinding = FindObjectOfType<PathFinding>();
+        if (pathFinding == null)
+        {
+            Debug.LogError("PathFinding component not found!");
+            return;
+        }
 
         List<Star> path = pathFinding.FindPath(fromStar, toStar); // Utiliser galaxyManager ici
         if (path.Count > 0)
@@ -259,7 +281,14 @@ public class UnitManager : MonoBehaviour
         // Ajoute un SpriteRenderer pour le halo
         SpriteRenderer glowRenderer = glow.AddComponent<SpriteRenderer>();
         // Charge le sprite de halo
-        glowRenderer.sprite = Resources.Load<Sprite>("Sprites/glow"); // Doit être dans Assets/Resources/Sprites/glow.png
+        if (galaxyManager != null && galaxyManager.glowSprite != null)
+        {
+            glowRenderer.sprite = galaxyManager.glowSprite;
+        }
+        else
+        {
+            Debug.LogError("GalaxyManager or its glowSprite is not assigned!");
+        }
 
         // Couleur du halo = couleur du propriétaire, très saturée
         Color glowColor = owner != null ? owner.Color : Color.white;

@@ -16,24 +16,32 @@ sur l'étoile de départ du joueur.
 
 public class GalaxyManager : MonoBehaviour
 {
+    [Header("Game Objects")]
     public GameObject starPrefab;
+    public GameObject unitPrefab;
+
+    [Header("Map Settings")]
     public int numberOfStars = 50;
     public float mapWidth = 100f;
     public float mapHeight = 100f;
     public float minStarDistance = 5f; // Distance minimale entre les étoiles
-    public GameObject unitPrefab;
-    public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
 
+    [Header("Gameplay Settings")]
     public int numberOfPlayers = 2;
     public int numberOfAI = 3;
+    public bool showFarStars = false; // When false, player only sees owned stars and their immediate neighbours
+
+    [Header("Asset References")]
+    public Sprite haloSprite;
+    public Sprite glowSprite;
+
+    public Camera mainCamera;  // Assurez-vous que la caméra principale est assignée dans l'inspecteur
     public List<Player> players = new List<Player>();
 
     public List<Star> stars = new List<Star>();
 
     private Dictionary<Star, List<Star>> starGraph = new Dictionary<Star, List<Star>>();
 
-    // When false, player only sees owned stars and their immediate neighbours
-    public bool showFarStars = false;
     private StarNameGenerator starNameGenerator;
     private PathFinding pathFinding; // Nouvelle référence à PathFinding
     private StarGraphManager starGraphManager; // Nouvelle référence à StarGraphManager

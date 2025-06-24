@@ -69,9 +69,9 @@ public class FloatingTextManager : MonoBehaviour
         Vector3 spawnPosition = position + Vector3.up * offsetY;
         spawnPosition.x += Random.Range(-randomOffsetX, randomOffsetX);
 
-        // Créer l'instance
-        GameObject instance = Instantiate(floatingTextPrefab, spawnPosition, Quaternion.identity);
-        instance.SetActive(true);
+        // Get an instance from the pool instead of instantiating
+        GameObject instance = ObjectPooler.Instance.GetFromPool("FloatingText", spawnPosition, Quaternion.identity);
+        if (instance == null) return; // Pool might be empty or tag is wrong
 
         // Configurer le texte
         FloatingText floatingText = instance.GetComponent<FloatingText>();

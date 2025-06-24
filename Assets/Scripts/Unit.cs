@@ -14,24 +14,23 @@ stratégique des déplacements des unités dans le jeu.
 public class Unit : MonoBehaviour
 {
     public Star fromStar;
-    public string owner;
+    public Player owner;
     public Star targetStar;
     public int units;
     public TextMeshPro textMesh;
 
-    public void Initialize(Star from, Star target, int unitCount)
+    public void Initialize(Star from, Star target, int unitCount, Player ownerPlayer)
     {
         fromStar = from;
         targetStar = target;
         units = unitCount;
-        owner = from.Owner.Name; // Assurez-vous de définir le propriétaire correctement
+        owner = ownerPlayer;
 
         if (textMesh != null)
         {
             textMesh.text = units.ToString();
         }
         UpdateColor();
-
     }
 
 
@@ -45,9 +44,9 @@ public class Unit : MonoBehaviour
 
     private void UpdateColor()
     {
-        if (fromStar != null && fromStar.Owner != null)
+        if (owner != null)
         {
-            GetComponent<SpriteRenderer>().color = fromStar.Owner.Color;
+            GetComponent<SpriteRenderer>().color = owner.Color;
         }
     }
 }

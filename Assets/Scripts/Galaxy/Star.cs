@@ -37,8 +37,14 @@ public class Star : MonoBehaviour
     public enum StarType { Neutral, Normal, Capital, Conquered }
     public StarType starType;
 
+    private LineManager lineManager;
+    private GalaxyManager galaxyManager;
+
     void Start()
     {
+        lineManager = FindObjectOfType<LineManager>();
+        galaxyManager = FindObjectOfType<GalaxyManager>();
+
         spriteRenderer = GetComponent<SpriteRenderer>();
         circleCollider = GetComponent<CircleCollider2D>();
         hoverEffect = transform.Find("HoverEffect").gameObject;
@@ -50,7 +56,15 @@ public class Star : MonoBehaviour
         glow.transform.localPosition = Vector3.zero;
         glow.transform.localScale = Vector3.one * 0.4f;
         SpriteRenderer glowRenderer = glow.AddComponent<SpriteRenderer>();
-        glowRenderer.sprite = Resources.Load<Sprite>("Sprites/halo");
+        if (galaxyManager != null && galaxyManager.haloSprite != null)
+        {
+            glowRenderer.sprite = galaxyManager.haloSprite;
+        }
+        else
+        {
+            Debug.LogError("GalaxyManager or its haloSprite is not assigned!");
+        }
+
         Color glowColor = (Owner != null) ? Owner.Color : Color.white;
         glowColor.a = 1f;
         glowRenderer.color = glowColor;
@@ -69,6 +83,12 @@ public class Star : MonoBehaviour
         selectedEffect.SetActive(false);
 
         UpdateText();
+
+        // Ajout à la grille spatiale si l'étoile a un propriétaire
+        if (Owner != null && SpatialGridManager.Instance != null)
+        {
+            SpatialGridManager.Instance.AddStar(Owner, this);
+        }
     }
 
     void OnDestroy()
@@ -207,8 +227,9 @@ public class Star : MonoBehaviour
     // Ajout : méthode utilitaire pour savoir si la planète est visible (champ de vision)
     public bool IsInVision() => isVisible;
 
-    public void Conquer(Star fromStar, int attackingUnits)
+    public void Conquer(Player attackingOwner, int attackingUnits)
     {
+        Player oldOwner = Owner;
         if (attackingUnits >= units)
         {
             units = attackingUnits - units;
@@ -218,11 +239,21 @@ public class Star : MonoBehaviour
             if (Owner != null)
             {
                 Owner.Stars.Remove(this);
+                // Retirer de la grille de l'ancien propriétaire
+                if (SpatialGridManager.Instance != null)
+                {
+                    SpatialGridManager.Instance.RemoveStar(Owner, this);
+                }
             }
-            Owner = fromStar.Owner;
+            Owner = attackingOwner;
             if (Owner != null)
             {
                 Owner.Stars.Add(this);
+                // Ajouter à la grille du nouveau propriétaire
+                if (SpatialGridManager.Instance != null)
+                {
+                    SpatialGridManager.Instance.AddStar(Owner, this);
+                }
             }
             if (starType == StarType.Capital)
             {
@@ -245,13 +276,11 @@ public class Star : MonoBehaviour
                 if (spriteRenderer != null)
                     spriteRenderer.color = new Color(0.6f, 0.6f, 0.6f, 0.5f);
             }
-            LineManager lineManager = FindObjectOfType<LineManager>();
             if (lineManager != null)
             {
                 lineManager.UpdateAllLines(this);
-                lineManager.UpdateAllLines(fromStar);
+                // lineManager.UpdateAllLines(fromStar); // plus besoin
             }
-            GalaxyManager galaxyManager = FindObjectOfType<GalaxyManager>();
             if (galaxyManager != null)
             {
                 galaxyManager.UpdatePlayerListUI();
